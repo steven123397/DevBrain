@@ -15,11 +15,11 @@ paths:
   background:
     - "docs/codex-kickoff-brief.md"
   design:
-    - "docs/product-requirements.md"
-    - "docs/future-data-model.md"
+    - "docs/design/product-requirements.md"
+    - "docs/design/future-data-model.md"
   plan:
     active:
-      - "docs/implementation-plan.md"
+      - "docs/plan/implementation-plan.md"
     templates_dir: "docs/plan"
     archive: "docs/plan/history.md"
   status:

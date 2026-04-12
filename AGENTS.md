@@ -4,8 +4,8 @@
 
 1. 先读 `docs/index.md`，确认本轮任务的文档入口和单一事实来源。
 2. 再按任务读取对应权威文档：
-   - 产品边界与验收：`docs/product-requirements.md`
-   - 实施顺序与任务拆解：`docs/implementation-plan.md`
+   - 产品边界与验收：`docs/design/product-requirements.md`
+   - 实施顺序与任务拆解：`docs/plan/implementation-plan.md`
    - 当前进度与风险：`docs/status/project-status.md`
 3. 只更新本轮实际触达的文档职责，不要把 design、plan、status 混写到一个文件里。
 
@@ -14,8 +14,9 @@
 - 本仓库的治理映射配置在 `.codex/project-governance.yaml`。
 - `README.md` 只负责项目总览、本地命令和入口导航，不记录实时执行状态。
 - `docs/codex-kickoff-brief.md` 是实现会话的快速背景，不替代 PRD。
-- `docs/product-requirements.md` 与 `docs/future-data-model.md` 负责长期边界、取舍与扩展方向。
-- `docs/implementation-plan.md` 与未来的 `docs/plan/*.md` 负责可执行任务拆分、完成定义与验证要求。
+- `docs/design/product-requirements.md` 与 `docs/design/future-data-model.md` 负责长期边界、取舍与扩展方向。
+- `docs/plan/implementation-plan.md` 与未来的 `docs/plan/*.md` 负责可执行任务拆分、完成定义与验证要求。
+- `docs/product-requirements.md`、`docs/future-data-model.md`、`docs/implementation-plan.md` 仅保留兼容入口，不作为权威来源维护内容。
 - `docs/status/project-status.md` 是当前进度、风险、阻塞和下一步的唯一权威状态页。
 - `docs/status/code-review-status.md` 负责沉淀 code review findings 与跟进状态。
 
