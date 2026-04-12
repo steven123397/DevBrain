@@ -16,7 +16,6 @@
 - `docs/codex-kickoff-brief.md` 是实现会话的快速背景，不替代 PRD。
 - `docs/design/product-requirements.md` 与 `docs/design/future-data-model.md` 负责长期边界、取舍与扩展方向。
 - `docs/plan/implementation-plan.md` 与未来的 `docs/plan/*.md` 负责可执行任务拆分、完成定义与验证要求。
-- `docs/product-requirements.md`、`docs/future-data-model.md`、`docs/implementation-plan.md` 仅保留兼容入口，不作为权威来源维护内容。
 - `docs/status/project-status.md` 是当前进度、风险、阻塞和下一步的唯一权威状态页。
 - `docs/status/code-review-status.md` 负责沉淀 code review findings 与跟进状态。
 

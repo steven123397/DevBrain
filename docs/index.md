@@ -35,7 +35,6 @@
 | 计划归档 | `docs/plan/history.md` | 已完成或废弃计划的历史记录 |
 | 当前状态 | `docs/status/project-status.md` | 当前阶段、已完成事项、风险、下一步 |
 | Review findings | `docs/status/code-review-status.md` | 审查发现、结论与跟进状态 |
-| 兼容入口 | `docs/product-requirements.md`、`docs/future-data-model.md`、`docs/implementation-plan.md` | 为旧链接保留的跳转页，不作为权威来源 |
 | 模板 | `docs/design/template.md`、`docs/plan/template.md`、`docs/status/template.md` | 新文档起草模板 |
 
 ## 3. 工作流约定

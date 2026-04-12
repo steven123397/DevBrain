@@ -755,12 +755,31 @@ README must document:
 
 Run:
 ```bash
+pnpm db:migrate
+pnpm seed
 pnpm test
 pnpm test:e2e
 pnpm build
 ```
 
 Expected: green build and a reproducible local review flow.
+
+**Handoff review flow**
+
+For local product review, use:
+```bash
+pnpm install
+pnpm db:migrate
+pnpm seed
+pnpm dev
+```
+
+Then walk through:
+1. dashboard overview
+2. `/notes` search and filter flow
+3. create inbox note
+4. digest it into a structured card
+5. open a related note from the detail page
 
 **Step 4: Optional checkpoint (only on explicit request)**
 
@@ -783,6 +802,7 @@ Otherwise keep `docs/status/project-status.md` and `docs/plan/history.md` up to 
 6. Add search
 7. Add related-note rules
 8. Add resilience and polish
+9. Finalize handoff docs and happy-path verification
 
 ## Product acceptance checklist for Hermes
 

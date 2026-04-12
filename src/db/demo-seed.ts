@@ -1,28 +1,9 @@
-import fs from "node:fs";
-import path from "node:path";
 import type Database from "better-sqlite3";
 
-function ensureKnowledgeSchema(sqlite: Database.Database) {
-  const notesTable = sqlite
-    .prepare(
-      "select name from sqlite_master where type = 'table' and name = 'notes'",
-    )
-    .get();
-
-  if (notesTable) {
-    return;
-  }
-
-  const migrationSql = fs.readFileSync(
-    path.join(process.cwd(), "src/db/migrations/0000_dapper_franklin_storm.sql"),
-    "utf8",
-  );
-
-  sqlite.exec(migrationSql);
-}
+import { runSqliteMigrations } from "./migrate.shared";
 
 export function clearKnowledgeData(sqlite: Database.Database) {
-  ensureKnowledgeSchema(sqlite);
+  runSqliteMigrations(sqlite);
   sqlite.exec(`
     delete from note_tags;
     delete from tags;
