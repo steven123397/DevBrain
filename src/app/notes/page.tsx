@@ -17,6 +17,12 @@ function takeFirstValue(value: SearchParamValue) {
   return value;
 }
 
+function resolveSearchText(
+  resolvedSearchParams: Record<string, SearchParamValue>,
+) {
+  return takeFirstValue(resolvedSearchParams.q) ?? takeFirstValue(resolvedSearchParams.query);
+}
+
 export default async function NotesPage({
   searchParams,
 }: {
@@ -24,7 +30,7 @@ export default async function NotesPage({
 }) {
   const resolvedSearchParams = (searchParams ? await searchParams : {}) ?? {};
   const filters = noteFiltersSchema.parse({
-    query: takeFirstValue(resolvedSearchParams.query),
+    query: resolveSearchText(resolvedSearchParams),
     status: takeFirstValue(resolvedSearchParams.status),
     tag: takeFirstValue(resolvedSearchParams.tag),
     stack: takeFirstValue(resolvedSearchParams.stack),

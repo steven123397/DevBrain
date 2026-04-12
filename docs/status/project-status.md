@@ -9,7 +9,7 @@
 
 ## 当前焦点
 
-Task 6 已完成，当前焦点切换到 Task 7（搜索与 URL 持久化）。
+Task 7 已完成，当前焦点切换到 Task 8（规则化相关推荐）。
 
 ## 已完成
 
@@ -34,22 +34,27 @@ Task 6 已完成，当前焦点切换到 Task 7（搜索与 URL 持久化）。
 - 已补齐 Task 6 的编辑表单状态管理：新增 `src/app/actions/update-note.shared.ts` 与 `src/components/note-editor-form.tsx`，支持轻量修正与完整消化。
 - 已将 `src/app/notes/[id]/page.tsx` 从基础落地页升级为完整详情页，展示摘要、问题、方案、为什么、原始输入、命令、参考与来源元数据。
 - 已补充 Task 6 单元测试与 E2E：`tests/unit/update-note-action.test.ts` 覆盖更新 action，`tests/e2e/digest-note.spec.ts` 覆盖 Inbox -> Digested 的浏览器闭环。
+- 已完成 Task 7：新增 `src/features/notes/note.search.ts`，把多字段搜索条件从 service 层抽为独立模块。
+- 已完成 Task 7 的 URL 持久化：`/notes` 列表页已切换到计划要求的 `q` / `status` / `tag` / `stack` / `sort` 查询参数。
+- 已为 Task 7 保留兼容读法：列表页会优先读取 `q`，同时兼容旧的 `query` 参数，避免已有链接立刻失效。
+- 当前 Task 7 采用 MVP 方案：仍使用集中封装的多字段 `LIKE` 搜索，尚未引入新的 SQLite FTS migration。
+- 已补充 Task 7 单元测试与 E2E：`tests/unit/note-search.test.ts` 覆盖标题 / 原始输入 / 问题 / 方案检索与组合筛选，`tests/e2e/search-notes.spec.ts` 覆盖 URL 持久化搜索流。
 
 ## 进行中
 
-- 下一阶段的主任务是 `docs/plan/implementation-plan.md` 中的 Task 7。
-- 当前搜索能力仍停留在 service 层的多字段 `LIKE` 查询，尚未抽出独立 `note.search.ts`，URL 参数也还未切换到计划约定的 `q` 键。
+- 下一阶段的主任务是 `docs/plan/implementation-plan.md` 中的 Task 8。
+- 当前搜索与筛选主闭环已可用，后续若要进一步提升检索性能或召回质量，可在 `src/features/notes/note.search.ts` 的 seam 上升级到 SQLite FTS。
 - 后续新增阶段性计划或评审结论时，将分别落到 `docs/plan/*.md` 与 `docs/status/code-review-status.md`。
 
 ## 风险 / 阻塞
 
 - 当前本地环境的 `pnpm` 会对原生依赖启用 build script 审批；新装依赖后需确认 `better-sqlite3` 绑定已经构建完成。
 - 仓库还未为 Task 3 创建 checkpoint commit；如需提交当前进度，需要用户再次显式下达提交指令。
-- Task 7 仍未开始，当前搜索与筛选链接还没有达到“可分享 URL + 专用搜索模块”的计划完成态。
+- 当前 Task 7 还没有使用 SQLite FTS；如果后续数据规模明显增长，需要重新评估检索性能与索引策略。
 
 ## 下一步
 
-- 开始 Task 7：抽出 `src/features/notes/note.search.ts`，并把列表页查询参数整理为计划约定的持久化 URL 形式。
+- 开始 Task 8：基于标签、技术栈、标题词与命令词实现可解释的规则化相关推荐。
 - 在进入新的 `standard` / `heavy` 任务时，先检查是否需要新增 `docs/plan/*.md` 或 `docs/design/*.md`。
 - 如果发生评审，统一把 findings 写入 `docs/status/code-review-status.md`。
 
@@ -68,3 +73,5 @@ Task 6 已完成，当前焦点切换到 Task 7（搜索与 URL 持久化）。
 - 2026-04-12：Task 5 已通过 `pnpm test`、`pnpm lint`、`pnpm build`、`pnpm test:e2e`。
 - 2026-04-12：Task 6 红灯验证通过，`tests/unit/update-note-action.test.ts` 在 `update-note` action 缺失时失败，`tests/e2e/digest-note.spec.ts` 在详情页缺少“继续整理”入口时失败。
 - 2026-04-12：Task 6 已通过 `pnpm test`、`pnpm lint`、`pnpm build`、`pnpm test:e2e`。
+- 2026-04-12：Task 7 红灯验证通过，`tests/unit/note-search.test.ts` 在 `note.search.ts` 缺失时失败，`tests/unit/list-notes.test.ts` 与 `tests/e2e/search-notes.spec.ts` 在列表页仍使用 `query` 参数时失败。
+- 2026-04-12：Task 7 已通过 `pnpm test`、`pnpm lint`、`pnpm build`、`pnpm test:e2e`。

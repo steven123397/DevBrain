@@ -8,7 +8,6 @@ import {
   eq,
   inArray,
   isNotNull,
-  sql,
 } from "drizzle-orm";
 
 import { db } from "@/db/client";
@@ -29,6 +28,7 @@ import type {
   NoteDashboardOverview,
   NoteFilterOptions,
 } from "./note.types";
+import { buildNoteSearchCondition } from "./note.search";
 
 function toIsoString(value: Date | number): string {
   if (value instanceof Date) {
@@ -69,21 +69,6 @@ function noteOrderBy(filters: NoteFiltersValues) {
   }
 
   return [desc(notes.updatedAt), desc(notes.createdAt)] as const;
-}
-
-function buildQueryCondition(query: string) {
-  const pattern = `%${query.toLowerCase()}%`;
-
-  return sql`(
-    lower(${notes.title}) like ${pattern}
-    or lower(${notes.rawInput}) like ${pattern}
-    or lower(coalesce(${notes.summary}, '')) like ${pattern}
-    or lower(coalesce(${notes.problem}, '')) like ${pattern}
-    or lower(coalesce(${notes.solution}, '')) like ${pattern}
-    or lower(coalesce(${notes.why}, '')) like ${pattern}
-    or lower(coalesce(${notes.commands}, '')) like ${pattern}
-    or lower(coalesce(${notes.references}, '')) like ${pattern}
-  )`;
 }
 
 export function createNoteService(database: typeof db = db) {
@@ -216,7 +201,7 @@ export function createNoteService(database: typeof db = db) {
     const conditions = [];
 
     if (filters.query) {
-      conditions.push(buildQueryCondition(filters.query));
+      conditions.push(buildNoteSearchCondition(filters.query));
     }
 
     if (filters.status) {

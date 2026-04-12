@@ -124,14 +124,14 @@ describe("notes page", () => {
     const html = renderToStaticMarkup(
       await NotesPage({
         searchParams: Promise.resolve({
-          query: "hydration",
+          q: "hydration",
           status: "inbox",
         }),
       }),
     );
 
     expect(html).toContain("搜索条目");
-    expect(html).toContain('name="query"');
+    expect(html).toContain('name="q"');
     expect(html).toContain('name="status"');
     expect(html).toContain('name="tag"');
     expect(html).toContain('name="stack"');

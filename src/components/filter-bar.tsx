@@ -37,7 +37,7 @@ export function FilterBar({ options, values }: FilterBarProps) {
           搜索条目
           <input
             aria-label="搜索条目"
-            name="query"
+            name="q"
             type="search"
             defaultValue={values.query ?? ""}
             placeholder="标题、原始输入、问题或方案"
