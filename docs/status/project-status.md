@@ -9,7 +9,7 @@
 
 ## 当前焦点
 
-Task 5 已完成，当前焦点切换到 Task 6（条目详情 / 编辑 / 消化流程）。
+Task 6 已完成，当前焦点切换到 Task 7（搜索与 URL 持久化）。
 
 ## 已完成
 
@@ -30,22 +30,26 @@ Task 5 已完成，当前焦点切换到 Task 6（条目详情 / 编辑 / 消化
 - 已补齐 Task 5 的 UI：新增 `src/components/note-form.tsx`，支持标题、原始输入、标签、技术栈、来源类型、来源链接的快速录入。
 - 已补齐创建后落点：新增基础版 `src/app/notes/[id]/page.tsx` 承接创建成功后的详情跳转，完整详情 / 编辑能力仍留给 Task 6。
 - 已补充 Task 5 单元测试与 E2E：`tests/unit/create-note-action.test.ts` 覆盖 action 校验，`tests/e2e/dashboard.spec.ts` 覆盖快速录入闭环。
+- 已完成 Task 6：补齐 `src/app/actions/update-note.ts`、`src/app/notes/[id]/edit/page.tsx`、`src/components/note-detail.tsx`，打通条目详情 / 编辑 / digest 工作流。
+- 已补齐 Task 6 的编辑表单状态管理：新增 `src/app/actions/update-note.shared.ts` 与 `src/components/note-editor-form.tsx`，支持轻量修正与完整消化。
+- 已将 `src/app/notes/[id]/page.tsx` 从基础落地页升级为完整详情页，展示摘要、问题、方案、为什么、原始输入、命令、参考与来源元数据。
+- 已补充 Task 6 单元测试与 E2E：`tests/unit/update-note-action.test.ts` 覆盖更新 action，`tests/e2e/digest-note.spec.ts` 覆盖 Inbox -> Digested 的浏览器闭环。
 
 ## 进行中
 
-- 下一阶段的主任务是 `docs/plan/implementation-plan.md` 中的 Task 6。
-- `src/app/notes/[id]/page.tsx` 当前只是承接 Task 5 的基础详情落地页，Task 6 需要继续补齐结构化详情展示、编辑入口与 digested 流转。
+- 下一阶段的主任务是 `docs/plan/implementation-plan.md` 中的 Task 7。
+- 当前搜索能力仍停留在 service 层的多字段 `LIKE` 查询，尚未抽出独立 `note.search.ts`，URL 参数也还未切换到计划约定的 `q` 键。
 - 后续新增阶段性计划或评审结论时，将分别落到 `docs/plan/*.md` 与 `docs/status/code-review-status.md`。
 
 ## 风险 / 阻塞
 
 - 当前本地环境的 `pnpm` 会对原生依赖启用 build script 审批；新装依赖后需确认 `better-sqlite3` 绑定已经构建完成。
 - 仓库还未为 Task 3 创建 checkpoint commit；如需提交当前进度，需要用户再次显式下达提交指令。
-- 目前详情页只是 Task 5 所需的最小承接页，真正的 digest 编辑流和更完整的结构化展示还未开始实现。
+- Task 7 仍未开始，当前搜索与筛选链接还没有达到“可分享 URL + 专用搜索模块”的计划完成态。
 
 ## 下一步
 
-- 开始 Task 6：把 `/notes/[id]` 从基础落地页扩展成真正的详情 / 编辑 / 消化工作流。
+- 开始 Task 7：抽出 `src/features/notes/note.search.ts`，并把列表页查询参数整理为计划约定的持久化 URL 形式。
 - 在进入新的 `standard` / `heavy` 任务时，先检查是否需要新增 `docs/plan/*.md` 或 `docs/design/*.md`。
 - 如果发生评审，统一把 findings 写入 `docs/status/code-review-status.md`。
 
@@ -62,3 +66,5 @@ Task 5 已完成，当前焦点切换到 Task 6（条目详情 / 编辑 / 消化
 - 2026-04-12：Task 4 已通过 `pnpm test`、`pnpm lint`、`pnpm build`、`pnpm test:e2e`。
 - 2026-04-12：Task 5 红灯验证通过，`tests/unit/create-note-action.test.ts` 在 `create-note` action 缺失时失败，`tests/e2e/dashboard.spec.ts` 在 `/notes/new` 尚未接入表单时失败。
 - 2026-04-12：Task 5 已通过 `pnpm test`、`pnpm lint`、`pnpm build`、`pnpm test:e2e`。
+- 2026-04-12：Task 6 红灯验证通过，`tests/unit/update-note-action.test.ts` 在 `update-note` action 缺失时失败，`tests/e2e/digest-note.spec.ts` 在详情页缺少“继续整理”入口时失败。
+- 2026-04-12：Task 6 已通过 `pnpm test`、`pnpm lint`、`pnpm build`、`pnpm test:e2e`。
