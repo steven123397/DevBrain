@@ -1,3 +1,10 @@
+import Link from "next/link";
+
+import { NoteList } from "@/components/note-list";
+import { noteService } from "@/features/notes/note.service";
+
+export const dynamic = "force-dynamic";
+
 const workflow = [
   {
     title: "收集",
@@ -23,7 +30,9 @@ const priorities = [
   "让快速录入足够轻，让后续消化足够结构化。",
 ];
 
-export default function Home() {
+export default async function Home() {
+  const overview = await noteService.getDashboardOverview(4);
+
   return (
     <main className="relative flex-1 overflow-hidden bg-[linear-gradient(180deg,#f7f6ef_0%,#f1ede2_40%,#ede7d9_100%)] text-slate-950">
       <div
@@ -73,33 +82,58 @@ export default function Home() {
                 </span>
               ))}
             </div>
+
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link
+                href="/notes/new"
+                className="rounded-full bg-slate-950 px-5 py-3 text-sm font-medium text-stone-50 transition hover:bg-slate-800"
+              >
+                快速新建条目
+              </Link>
+              <Link
+                href="/notes"
+                className="rounded-full border border-slate-900/10 bg-white px-5 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-900/25 hover:text-slate-950"
+              >
+                浏览全部条目
+              </Link>
+            </div>
           </div>
 
           <div className="rounded-[2rem] border border-slate-900/10 bg-slate-950 p-8 text-stone-100 shadow-[0_24px_80px_rgba(15,23,42,0.14)]">
             <p className="text-sm uppercase tracking-[0.32em] text-stone-400">
-              当前实现优先级
+              当前知识库存量
             </p>
-            <ol className="mt-6 space-y-4">
+            <div className="mt-6 grid gap-4 sm:grid-cols-3">
               {[
-                "数据模型",
-                "本地存储",
-                "结构化编辑",
-                "搜索与筛选",
-                "规则版相关条目推荐",
-              ].map((item, index) => (
-                <li
-                  key={item}
-                  className="flex items-start gap-4 border-b border-white/10 pb-4 last:border-none last:pb-0"
+                {
+                  label: "总条目",
+                  value: overview.totalNotes,
+                  tone: "text-stone-100",
+                },
+                {
+                  label: "Inbox",
+                  value: overview.inboxCount,
+                  tone: "text-amber-200",
+                },
+                {
+                  label: "Digested",
+                  value: overview.digestedCount,
+                  tone: "text-emerald-200",
+                },
+              ].map((item) => (
+                <article
+                  key={item.label}
+                  className="rounded-[1.5rem] border border-white/10 bg-white/5 p-5"
                 >
-                  <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/15 text-xs font-semibold text-stone-300">
-                    {index + 1}
-                  </span>
-                  <span className="text-base leading-7 text-stone-100">
-                    {item}
-                  </span>
-                </li>
+                  <p className="text-xs uppercase tracking-[0.28em] text-stone-400">
+                    {item.label}
+                  </p>
+                  <p className={`mt-4 text-4xl font-semibold tracking-[-0.05em] ${item.tone}`}>
+                    {item.value}
+                  </p>
+                </article>
               ))}
-            </ol>
+            </div>
           </div>
         </section>
 
@@ -135,42 +169,24 @@ export default function Home() {
           </div>
 
           <div className="rounded-[1.75rem] border border-slate-900/10 bg-white/70 p-6 shadow-[0_14px_40px_rgba(15,23,42,0.06)]">
-            <p className="text-sm uppercase tracking-[0.28em] text-slate-500">
-              当前闭环
-            </p>
-            <div className="mt-5 grid gap-4 sm:grid-cols-2">
-              <div className="rounded-2xl bg-stone-100 p-5">
-                <p className="text-xs uppercase tracking-[0.26em] text-slate-500">
-                  Capture
-                </p>
-                <p className="mt-3 text-lg font-medium leading-7 text-slate-900">
-                  先把标题、原始输入和上下文存进 Inbox。
-                </p>
-              </div>
-              <div className="rounded-2xl bg-stone-100 p-5">
-                <p className="text-xs uppercase tracking-[0.26em] text-slate-500">
-                  Digest
-                </p>
-                <p className="mt-3 text-lg font-medium leading-7 text-slate-900">
-                  补全问题、方案、原理和命令，把碎片变成资产。
-                </p>
-              </div>
-              <div className="rounded-2xl bg-stone-100 p-5">
-                <p className="text-xs uppercase tracking-[0.26em] text-slate-500">
-                  Recall
-                </p>
-                <p className="mt-3 text-lg font-medium leading-7 text-slate-900">
-                  用关键词、标签和技术栈快速召回过去的真实经验。
-                </p>
-              </div>
-              <div className="rounded-2xl bg-stone-100 p-5">
-                <p className="text-xs uppercase tracking-[0.26em] text-slate-500">
-                  Extend Later
-                </p>
-                <p className="mt-3 text-lg font-medium leading-7 text-slate-900">
-                  未来再叠加 embedding、知识图谱和情境召回，不推倒重来。
-                </p>
-              </div>
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm uppercase tracking-[0.28em] text-slate-500">
+                最近更新
+              </p>
+              <Link
+                href="/notes"
+                className="text-sm font-medium text-amber-800 transition hover:text-amber-950"
+              >
+                去列表页继续筛选
+              </Link>
+            </div>
+            <div className="mt-5">
+              <NoteList
+                notes={overview.recentNotes}
+                compact
+                emptyTitle="还没有任何条目"
+                emptyDescription="先把第一条 Inbox 记录放进来，仪表盘就会开始长出脉络。"
+              />
             </div>
           </div>
         </section>

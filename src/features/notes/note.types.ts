@@ -24,6 +24,7 @@ export interface KnowledgeNote {
   why: string | null;
   commands: string | null;
   references: string | null;
+  tags: string[];
   stack: string | null;
   status: NoteStatus;
   confidence: NoteConfidence;
@@ -31,4 +32,16 @@ export interface KnowledgeNote {
   sourceUrl: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface NoteDashboardOverview {
+  totalNotes: number;
+  inboxCount: number;
+  digestedCount: number;
+  recentNotes: KnowledgeNote[];
+}
+
+export interface NoteFilterOptions {
+  tags: string[];
+  stacks: string[];
 }

@@ -12,7 +12,14 @@ const eslintConfig = [
     extends: ["next/core-web-vitals", "next/typescript"],
   }),
   {
-    ignores: [".next/**", "out/**", "build/**", "next-env.d.ts"],
+    ignores: [
+      ".next/**",
+      "out/**",
+      "build/**",
+      "test-results/**",
+      "playwright-report/**",
+      "next-env.d.ts",
+    ],
   },
 ];
 

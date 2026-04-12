@@ -20,8 +20,8 @@ describe("app bootstrap", () => {
     expect(metadata.description).toContain("本地优先");
   });
 
-  it("renders the knowledge loop on the homepage", () => {
-    const html = renderToStaticMarkup(Home());
+  it("renders the knowledge loop on the homepage", async () => {
+    const html = renderToStaticMarkup(await Home());
 
     expect(html).toContain("DevBrain");
     expect(html).toContain("收集");
