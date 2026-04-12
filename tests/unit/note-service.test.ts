@@ -294,4 +294,50 @@ describe("note service", () => {
       context.sqlite.close();
     }
   });
+
+  it("returns explainable related notes ordered by score", async () => {
+    const context = createTestContext();
+
+    try {
+      const base = await context.service.createNote({
+        title: "pnpm workspace alignment",
+        tags: ["pnpm", "workspace"],
+        stack: "Tooling",
+        commands: "pnpm install --recursive",
+        status: "digested",
+      });
+      await context.service.createNote({
+        title: "docker cache cleanup",
+        tags: ["docker"],
+        stack: "Docker",
+        commands: "docker builder prune",
+        status: "digested",
+      });
+      const stronger = await context.service.createNote({
+        title: "pnpm workspace install guide",
+        tags: ["pnpm", "workspace"],
+        stack: "Tooling",
+        commands: "pnpm install",
+        status: "digested",
+      });
+      const weaker = await context.service.createNote({
+        title: "workspace peer dependency checklist",
+        tags: ["workspace"],
+        commands: "pnpm list",
+        status: "digested",
+      });
+
+      const related = await context.service.listRelatedNotes(base.id);
+
+      expect(related.map((item) => item.note.id)).toEqual([stronger.id, weaker.id]);
+      expect(related[0]?.reasons).toEqual(
+        expect.arrayContaining([
+          "共享标签：#pnpm、#workspace",
+          "同技术栈：Tooling",
+        ]),
+      );
+    } finally {
+      context.sqlite.close();
+    }
+  });
 });

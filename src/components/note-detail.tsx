@@ -1,3 +1,6 @@
+import Link from "next/link";
+
+import type { RelatedNoteRecommendation } from "@/features/notes/note.related";
 import type { KnowledgeNote } from "@/features/notes/note.types";
 
 const statusLabelMap = {
@@ -55,7 +58,66 @@ function DetailSection({
   );
 }
 
-export function NoteDetail({ note }: { note: KnowledgeNote }) {
+function RelatedNotesPanel({
+  relatedNotes,
+}: {
+  relatedNotes: RelatedNoteRecommendation[];
+}) {
+  return (
+    <section className="rounded-[2rem] border border-slate-900/10 bg-white/82 p-7 shadow-[0_24px_80px_rgba(15,23,42,0.08)]">
+      <h2 className="text-sm uppercase tracking-[0.28em] text-slate-500">
+        相关推荐
+      </h2>
+
+      {relatedNotes.length > 0 ? (
+        <div className="mt-5 space-y-4">
+          {relatedNotes.map((item) => (
+            <article
+              key={item.note.id}
+              className="rounded-[1.5rem] border border-slate-900/10 bg-stone-50/90 p-5"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <Link
+                    href={`/notes/${item.note.id}`}
+                    className="text-base font-semibold text-slate-950 transition hover:text-amber-800"
+                  >
+                    {item.note.title}
+                  </Link>
+                  <p className="mt-2 text-sm leading-7 text-slate-600">
+                    匹配分 {item.score}
+                  </p>
+                </div>
+
+                <span className="rounded-full bg-slate-900 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-stone-50">
+                  {item.note.status}
+                </span>
+              </div>
+
+              <ul className="mt-4 space-y-2 text-sm leading-7 text-slate-700">
+                {item.reasons.map((reason) => (
+                  <li key={reason}>{reason}</li>
+                ))}
+              </ul>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <p className="mt-4 text-sm leading-7 text-slate-600">
+          当前还没有足够的规则命中条目，先继续积累更多标签、技术栈和命令片段。
+        </p>
+      )}
+    </section>
+  );
+}
+
+export function NoteDetail({
+  note,
+  relatedNotes,
+}: {
+  note: KnowledgeNote;
+  relatedNotes: RelatedNoteRecommendation[];
+}) {
   return (
     <section className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
       <article className="rounded-[2rem] border border-slate-900/10 bg-white/82 p-7 shadow-[0_24px_80px_rgba(15,23,42,0.08)]">
@@ -108,75 +170,79 @@ export function NoteDetail({ note }: { note: KnowledgeNote }) {
         />
       </article>
 
-      <aside className="rounded-[2rem] border border-slate-900/10 bg-slate-950 p-7 text-stone-100 shadow-[0_24px_80px_rgba(15,23,42,0.14)]">
-        <p className="text-xs uppercase tracking-[0.3em] text-stone-400">
-          metadata
-        </p>
+      <div className="space-y-6">
+        <aside className="rounded-[2rem] border border-slate-900/10 bg-slate-950 p-7 text-stone-100 shadow-[0_24px_80px_rgba(15,23,42,0.14)]">
+          <p className="text-xs uppercase tracking-[0.3em] text-stone-400">
+            metadata
+          </p>
 
-        <div className="mt-6 space-y-6">
-          <section>
-            <h2 className="text-sm uppercase tracking-[0.28em] text-stone-400">
-              时间
-            </h2>
-            <p className="mt-3 text-sm leading-7 text-stone-100">
-              创建于 {formatTimestamp(note.createdAt)}
-            </p>
-            <p className="mt-1 text-sm leading-7 text-stone-300">
-              最近更新于 {formatTimestamp(note.updatedAt)}
-            </p>
-          </section>
+          <div className="mt-6 space-y-6">
+            <section>
+              <h2 className="text-sm uppercase tracking-[0.28em] text-stone-400">
+                时间
+              </h2>
+              <p className="mt-3 text-sm leading-7 text-stone-100">
+                创建于 {formatTimestamp(note.createdAt)}
+              </p>
+              <p className="mt-1 text-sm leading-7 text-stone-300">
+                最近更新于 {formatTimestamp(note.updatedAt)}
+              </p>
+            </section>
 
-          <section>
-            <h2 className="text-sm uppercase tracking-[0.28em] text-stone-400">
-              标签
-            </h2>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {note.tags.length > 0 ? (
-                note.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs uppercase tracking-[0.2em] text-stone-100"
-                  >
-                    #{tag}
-                  </span>
-                ))
+            <section>
+              <h2 className="text-sm uppercase tracking-[0.28em] text-stone-400">
+                标签
+              </h2>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {note.tags.length > 0 ? (
+                  note.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs uppercase tracking-[0.2em] text-stone-100"
+                    >
+                      #{tag}
+                    </span>
+                  ))
+                ) : (
+                  <p className="text-sm text-stone-300">还没有标签。</p>
+                )}
+              </div>
+            </section>
+
+            <section>
+              <h2 className="text-sm uppercase tracking-[0.28em] text-stone-400">
+                技术栈
+              </h2>
+              <p className="mt-3 text-sm leading-7 text-stone-100">
+                {note.stack ?? "暂未记录"}
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-sm uppercase tracking-[0.28em] text-stone-400">
+                来源
+              </h2>
+              <p className="mt-3 text-sm leading-7 text-stone-100">
+                类型：{note.sourceType}
+              </p>
+              {note.sourceUrl ? (
+                <a
+                  href={note.sourceUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-2 inline-flex text-sm text-amber-200 transition hover:text-amber-100"
+                >
+                  打开来源链接
+                </a>
               ) : (
-                <p className="text-sm text-stone-300">还没有标签。</p>
+                <p className="mt-2 text-sm text-stone-300">未附带来源链接。</p>
               )}
-            </div>
-          </section>
+            </section>
+          </div>
+        </aside>
 
-          <section>
-            <h2 className="text-sm uppercase tracking-[0.28em] text-stone-400">
-              技术栈
-            </h2>
-            <p className="mt-3 text-sm leading-7 text-stone-100">
-              {note.stack ?? "暂未记录"}
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-sm uppercase tracking-[0.28em] text-stone-400">
-              来源
-            </h2>
-            <p className="mt-3 text-sm leading-7 text-stone-100">
-              类型：{note.sourceType}
-            </p>
-            {note.sourceUrl ? (
-              <a
-                href={note.sourceUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="mt-2 inline-flex text-sm text-amber-200 transition hover:text-amber-100"
-              >
-                打开来源链接
-              </a>
-            ) : (
-              <p className="mt-2 text-sm text-stone-300">未附带来源链接。</p>
-            )}
-          </section>
-        </div>
-      </aside>
+        <RelatedNotesPanel relatedNotes={relatedNotes} />
+      </div>
     </section>
   );
 }

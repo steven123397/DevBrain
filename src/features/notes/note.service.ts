@@ -8,6 +8,7 @@ import {
   eq,
   inArray,
   isNotNull,
+  ne,
 } from "drizzle-orm";
 
 import { db } from "@/db/client";
@@ -28,6 +29,10 @@ import type {
   NoteDashboardOverview,
   NoteFilterOptions,
 } from "./note.types";
+import {
+  buildRelatedRecommendations,
+  type RelatedNoteRecommendation,
+} from "./note.related";
 import { buildNoteSearchCondition } from "./note.search";
 
 function toIsoString(value: Date | number): string {
@@ -336,10 +341,32 @@ export function createNoteService(database: typeof db = db) {
     return listNotes({ limit, sort: "updatedAtDesc" });
   }
 
+  async function listRelatedNotes(
+    id: string,
+    limit = 4,
+  ): Promise<RelatedNoteRecommendation[]> {
+    const base = await getNoteById(id);
+    if (!base) {
+      return [];
+    }
+
+    const records = database
+      .select()
+      .from(notes)
+      .where(ne(notes.id, id))
+      .all();
+
+    const noteTagMap = await getNoteTags(records.map((record) => record.id));
+    const candidates = records.map((record) => mapNoteRecord(record, noteTagMap));
+
+    return buildRelatedRecommendations(base, candidates, limit);
+  }
+
   return {
     createNote,
     getNoteById,
     listNotes,
+    listRelatedNotes,
     listFilterOptions,
     updateNote,
     deleteNote,

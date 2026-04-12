@@ -17,10 +17,62 @@ function takeFirstValue(value: SearchParamValue) {
   return value;
 }
 
+function takeNonEmptyValue(value: SearchParamValue) {
+  const resolved = takeFirstValue(value);
+
+  if (!resolved) {
+    return undefined;
+  }
+
+  return resolved;
+}
+
 function resolveSearchText(
   resolvedSearchParams: Record<string, SearchParamValue>,
 ) {
-  return takeFirstValue(resolvedSearchParams.q) ?? takeFirstValue(resolvedSearchParams.query);
+  return takeNonEmptyValue(resolvedSearchParams.q) ?? takeNonEmptyValue(resolvedSearchParams.query);
+}
+
+function resolveEmptyState(filters: {
+  query?: string;
+  status?: string;
+  tag?: string;
+  stack?: string;
+}) {
+  const hasSearchTerms = Boolean(filters.query || filters.tag || filters.stack);
+
+  if (!hasSearchTerms && filters.status === "inbox") {
+    return {
+      title: "Inbox 现在是空的",
+      description: "先新建一条记录，或者稍后再回来继续整理新的碎片条目。",
+    };
+  }
+
+  if (!hasSearchTerms && filters.status === "digested") {
+    return {
+      title: "还没有 Digested 条目",
+      description: "先把 Inbox 里的记录整理成结构化知识卡片，这里才会开始出现结果。",
+    };
+  }
+
+  if (!hasSearchTerms && filters.status === "archived") {
+    return {
+      title: "还没有 Archived 条目",
+      description: "当前还没有进入归档阶段的记录，先继续积累和整理即可。",
+    };
+  }
+
+  if (hasSearchTerms || filters.status) {
+    return {
+      title: "还没有匹配到条目",
+      description: "试试放宽筛选条件，或者先去新建一条 Inbox 记录。",
+    };
+  }
+
+  return {
+    title: "还没有任何条目",
+    description: "先去新建第一条 Inbox 记录，列表页就会开始出现你的知识卡片。",
+  };
 }
 
 export default async function NotesPage({
@@ -31,11 +83,13 @@ export default async function NotesPage({
   const resolvedSearchParams = (searchParams ? await searchParams : {}) ?? {};
   const filters = noteFiltersSchema.parse({
     query: resolveSearchText(resolvedSearchParams),
-    status: takeFirstValue(resolvedSearchParams.status),
-    tag: takeFirstValue(resolvedSearchParams.tag),
-    stack: takeFirstValue(resolvedSearchParams.stack),
-    sort: takeFirstValue(resolvedSearchParams.sort),
+    status: takeNonEmptyValue(resolvedSearchParams.status),
+    tag: takeNonEmptyValue(resolvedSearchParams.tag),
+    stack: takeNonEmptyValue(resolvedSearchParams.stack),
+    sort: takeNonEmptyValue(resolvedSearchParams.sort),
   });
+  const showDeletedNotice = takeFirstValue(resolvedSearchParams.deleted) === "1";
+  const emptyState = resolveEmptyState(filters);
 
   const [filterOptions, notes] = await Promise.all([
     noteService.listFilterOptions(),
@@ -81,6 +135,12 @@ export default async function NotesPage({
 
         <FilterBar options={filterOptions} values={filters} />
 
+        {showDeletedNotice ? (
+          <section className="rounded-[1.5rem] border border-emerald-700/15 bg-emerald-50 px-5 py-4 text-sm leading-7 text-emerald-900">
+            条目已删除，你可以继续筛选其他记录，或者马上新建一条新的 Inbox 知识。
+          </section>
+        ) : null}
+
         <section className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm uppercase tracking-[0.3em] text-slate-500">
             {notes.length} 条结果
@@ -92,8 +152,8 @@ export default async function NotesPage({
 
         <NoteList
           notes={notes}
-          emptyTitle="还没有匹配到条目"
-          emptyDescription="试试放宽筛选条件，或者先去新建一条 Inbox 记录。"
+          emptyTitle={emptyState.title}
+          emptyDescription={emptyState.description}
         />
       </div>
     </main>

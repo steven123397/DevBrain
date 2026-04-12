@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { deleteNoteAction } from "@/app/actions/delete-note";
 import { NoteDetail } from "@/components/note-detail";
 import { noteService } from "@/features/notes/note.service";
 
@@ -12,7 +13,10 @@ export default async function NoteDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const note = await noteService.getNoteById(id);
+  const [note, relatedNotes] = await Promise.all([
+    noteService.getNoteById(id),
+    noteService.listRelatedNotes(id),
+  ]);
 
   if (!note) {
     notFound();
@@ -58,10 +62,19 @@ export default async function NoteDetailPage({
             >
               返回列表
             </Link>
+            <form action={deleteNoteAction}>
+              <input type="hidden" name="noteId" value={note.id} />
+              <button
+                type="submit"
+                className="rounded-full border border-rose-900/15 bg-rose-50 px-5 py-2.5 text-sm font-medium text-rose-900 transition hover:border-rose-900/30 hover:bg-rose-100"
+              >
+                删除条目
+              </button>
+            </form>
           </div>
         </header>
 
-        <NoteDetail note={note} />
+        <NoteDetail note={note} relatedNotes={relatedNotes} />
       </div>
     </main>
   );

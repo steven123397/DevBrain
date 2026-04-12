@@ -1,6 +1,9 @@
 import { expect, test } from "@playwright/test";
 
+import { resetSeededDatabase } from "./database";
+
 test("an inbox note can be digested from the browser", async ({ page }) => {
+  resetSeededDatabase();
   await page.goto("/notes/note-2");
 
   await expect(

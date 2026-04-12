@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import Link from "next/link";
 
 import type { KnowledgeNote } from "@/features/notes/note.types";
 
@@ -73,7 +74,13 @@ export function NoteList({
                 最近更新 {formatNoteDate(note.updatedAt)}
               </p>
               <h3 className="mt-3 text-xl font-semibold tracking-[-0.03em] text-slate-950">
-                {note.title}
+                <Link
+                  href={`/notes/${note.id}`}
+                  aria-label={`打开 ${note.title}`}
+                  className="transition hover:text-amber-800"
+                >
+                  {note.title}
+                </Link>
               </h3>
             </div>
             <span
@@ -106,6 +113,15 @@ export function NoteList({
                 #{tag}
               </span>
             ))}
+          </div>
+
+          <div className="mt-5">
+            <Link
+              href={`/notes/${note.id}`}
+              className="text-sm font-medium text-amber-800 transition hover:text-amber-950"
+            >
+              查看详情
+            </Link>
           </div>
         </li>
       ))}

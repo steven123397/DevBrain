@@ -1,6 +1,9 @@
 import { expect, test } from "@playwright/test";
 
+import { resetSeededDatabase } from "./database";
+
 test("dashboard and notes list render seeded data", async ({ page }) => {
+  resetSeededDatabase();
   await page.goto("/");
 
   await expect(page.getByText("总条目", { exact: true })).toBeVisible();
@@ -11,13 +14,15 @@ test("dashboard and notes list render seeded data", async ({ page }) => {
 
   await expect(page).toHaveURL(/\/notes/);
   await expect(page.getByRole("searchbox", { name: "搜索条目" })).toBeVisible();
-  await expect(page.getByText("2 条结果")).toBeVisible();
+  await expect(page.getByText("3 条结果")).toBeVisible();
   await expect(page.getByText("pnpm peer dep fix")).toBeVisible();
+  await expect(page.getByText("next.js hydration guard")).toBeVisible();
 });
 
 test("quick capture creates an inbox note and lands on the detail page", async ({
   page,
 }) => {
+  resetSeededDatabase();
   await page.goto("/notes/new");
 
   await page.getByLabel("标题").fill("Document route handler cache bust");
@@ -36,6 +41,7 @@ test("quick capture creates an inbox note and lands on the detail page", async (
     page.getByRole("heading", { name: "Document route handler cache bust" }),
   ).toBeVisible();
   await expect(page.getByText("remember the header mismatch repro")).toBeVisible();
-  await expect(page.getByText("#nextjs")).toBeVisible();
-  await expect(page.getByText("#caching")).toBeVisible();
+  const metadataPanel = page.locator("aside");
+  await expect(metadataPanel.getByText("#nextjs", { exact: true })).toBeVisible();
+  await expect(metadataPanel.getByText("#caching", { exact: true })).toBeVisible();
 });

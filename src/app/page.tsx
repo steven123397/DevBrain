@@ -134,6 +134,12 @@ export default async function Home() {
                 </article>
               ))}
             </div>
+
+            {overview.inboxCount === 0 ? (
+              <p className="mt-6 rounded-[1.25rem] border border-white/10 bg-white/5 px-4 py-4 text-sm leading-7 text-stone-200">
+                Inbox 现在是空的，说明待整理队列已经清空；如果刚开始使用，可以先快速新建第一条记录。
+              </p>
+            ) : null}
           </div>
         </section>
 
