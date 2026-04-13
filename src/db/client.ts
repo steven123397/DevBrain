@@ -5,17 +5,9 @@ import Database from "better-sqlite3";
 import { drizzle } from "drizzle-orm/better-sqlite3";
 
 import * as schema from "./schema";
+import { resolveDatabaseFilePath } from "./database-path";
 
-function resolveDatabaseFilePath() {
-  const configuredPath = process.env.DEVBRAIN_DB_FILE?.trim();
-  if (configuredPath) {
-    return path.resolve(process.cwd(), configuredPath);
-  }
-
-  return path.join(process.cwd(), "data", "devbrain.sqlite");
-}
-
-export const databaseFilePath = resolveDatabaseFilePath();
+export const databaseFilePath = resolveDatabaseFilePath().databaseFilePath;
 
 fs.mkdirSync(path.dirname(databaseFilePath), { recursive: true });
 

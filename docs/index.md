@@ -30,7 +30,7 @@
 | 根规则 | `AGENTS.md` | 仓库默认治理规则、验证基线、回写原则 |
 | 治理配置 | `.codex/project-governance.yaml` | 文档角色到物理路径的稳定映射 |
 | 背景 | `docs/codex-kickoff-brief.md` | 给实现会话的快速背景，不替代 PRD |
-| 设计 | `docs/design/product-requirements.md`、`docs/design/future-data-model.md` | 长期边界、取舍和未来扩展缝 |
+| 设计 | `docs/design/product-requirements.md`、`docs/design/future-data-model.md`、`docs/design/synthetic-growth-lab.md` | 长期边界、取舍、未来扩展缝与未来实验方向记录 |
 | 执行计划 | `docs/plan/implementation-plan.md`、`docs/plan/*.md` | 任务拆分、完成定义、验证与回写要求 |
 | 计划归档 | `docs/plan/history.md` | 已完成或废弃计划的历史记录 |
 | 当前状态 | `docs/status/project-status.md` | 当前阶段、已完成事项、风险、下一步 |

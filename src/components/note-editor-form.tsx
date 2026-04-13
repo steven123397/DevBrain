@@ -103,6 +103,7 @@ export function NoteEditorForm({
               defaultValue={state.values.summary}
               className="rounded-3xl border border-slate-900/10 bg-stone-50 px-4 py-3 text-base leading-7 text-slate-950 outline-none transition focus:border-amber-700/40 focus:bg-white"
             />
+            <FieldError message={state.fieldErrors?.summary?.[0]} />
           </label>
 
           <label className="flex flex-col gap-2 text-sm font-medium text-slate-700">
@@ -114,6 +115,7 @@ export function NoteEditorForm({
               defaultValue={state.values.problem}
               className="rounded-3xl border border-slate-900/10 bg-stone-50 px-4 py-3 text-base leading-7 text-slate-950 outline-none transition focus:border-amber-700/40 focus:bg-white"
             />
+            <FieldError message={state.fieldErrors?.problem?.[0]} />
           </label>
         </div>
 
@@ -127,6 +129,7 @@ export function NoteEditorForm({
               defaultValue={state.values.solution}
               className="rounded-3xl border border-slate-900/10 bg-stone-50 px-4 py-3 text-base leading-7 text-slate-950 outline-none transition focus:border-amber-700/40 focus:bg-white"
             />
+            <FieldError message={state.fieldErrors?.solution?.[0]} />
           </label>
 
           <label className="flex flex-col gap-2 text-sm font-medium text-slate-700">
@@ -174,6 +177,10 @@ export function NoteEditorForm({
               defaultValue={state.values.tags}
               className="rounded-2xl border border-slate-900/10 bg-stone-50 px-4 py-3 text-base text-slate-950 outline-none transition focus:border-amber-700/40 focus:bg-white"
             />
+            <p className="text-xs leading-6 text-slate-500">
+              会自动统一常见写法；输入时不用手动处理大小写或 `#` 前缀。
+            </p>
+            <FieldError message={state.fieldErrors?.tags?.[0]} />
           </label>
 
           <label className="flex flex-col gap-2 text-sm font-medium text-slate-700">
@@ -184,6 +191,10 @@ export function NoteEditorForm({
               defaultValue={state.values.stack}
               className="rounded-2xl border border-slate-900/10 bg-stone-50 px-4 py-3 text-base text-slate-950 outline-none transition focus:border-amber-700/40 focus:bg-white"
             />
+            <p className="text-xs leading-6 text-slate-500">
+              常见技术栈会自动 canonicalize，便于后续筛选和相关推荐稳定命中。
+            </p>
+            <FieldError message={state.fieldErrors?.stack?.[0]} />
           </label>
         </div>
 
@@ -258,7 +269,8 @@ export function NoteEditorForm({
 
       <div className="mt-8 flex flex-wrap items-center justify-between gap-4">
         <p className="max-w-2xl text-sm leading-7 text-slate-600">
-          这里既可以做轻量修正，也可以把 Inbox 碎片补成结构化的可复用知识卡片。
+          这里既可以做轻量修正，也可以把 Inbox 碎片补成结构化的可复用知识卡片。若要标记为
+          Digested，至少补齐摘要、问题、方案，并填写标签或技术栈其中之一。
         </p>
         <SubmitButton />
       </div>

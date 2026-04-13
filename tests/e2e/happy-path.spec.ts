@@ -23,8 +23,13 @@ test("happy path covers create, search, digest, and related-note reuse", async (
   await page.getByLabel("搜索条目").fill("workspace override smoke test");
   await page.getByRole("button", { name: "应用筛选" }).click();
 
-  await expect(page.getByText("1 条结果")).toBeVisible();
-  await page.getByRole("link", { name: "打开 pnpm workspace overrides checklist" }).click();
+  await expect(page.getByText(/条结果/)).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "打开 pnpm workspace overrides checklist" }),
+  ).toBeVisible();
+  await page
+    .getByRole("link", { name: "打开 pnpm workspace overrides checklist" })
+    .click();
 
   await page.getByRole("link", { name: "继续整理" }).click();
   await expect(page).toHaveURL(/\/notes\/.+\/edit$/);

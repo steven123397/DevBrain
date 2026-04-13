@@ -69,6 +69,9 @@ describe("note service", () => {
       const middle = await context.service.createNote({
         title: "middle digested note",
         status: "digested",
+        summary: "Structured summary for the middle digested note.",
+        problem: "A reusable digested note needs the required fields.",
+        solution: "Fill summary, problem, and solution before marking digested.",
         tags: ["react"],
       });
       const newer = await context.service.createNote({
@@ -124,6 +127,8 @@ describe("note service", () => {
 
       const updated = await context.service.updateNote(created.id, {
         summary: "Browser-only logic belongs in useEffect.",
+        problem: "Server and client rendered different markup.",
+        solution: "Move browser-only logic into useEffect.",
         status: "digested",
         confidence: "tested",
         tags: ["nextjs", "ssr"],
@@ -132,6 +137,8 @@ describe("note service", () => {
       expect(updated).toMatchObject({
         id: created.id,
         summary: "Browser-only logic belongs in useEffect.",
+        problem: "Server and client rendered different markup.",
+        solution: "Move browser-only logic into useEffect.",
         status: "digested",
         confidence: "tested",
         tags: ["nextjs", "ssr"],
@@ -139,6 +146,25 @@ describe("note service", () => {
 
       const loaded = await context.service.getNoteById(created.id);
       expect(loaded?.tags).toEqual(["nextjs", "ssr"]);
+    } finally {
+      context.sqlite.close();
+    }
+  });
+
+  it("rejects a digested transition when the merged note still misses required fields", async () => {
+    const context = createTestContext();
+
+    try {
+      const created = await context.service.createNote({
+        title: "hydration mismatch",
+        tags: ["nextjs"],
+      });
+
+      await expect(
+        context.service.updateNote(created.id, {
+          status: "digested",
+        }),
+      ).rejects.toThrow(/digested/i);
     } finally {
       context.sqlite.close();
     }
@@ -227,11 +253,17 @@ describe("note service", () => {
       const second = await context.service.createNote({
         title: "second digested note",
         status: "digested",
+        summary: "Structured summary for the second digested note.",
+        problem: "Dashboard counts should include compliant digested notes.",
+        solution: "Create digested fixtures with the minimum required structure.",
         tags: ["react"],
       });
       const third = await context.service.createNote({
         title: "third digested note",
         status: "digested",
+        summary: "Structured summary for the third digested note.",
+        problem: "Recent digested notes should remain valid fixtures.",
+        solution: "Provide summary, problem, and solution alongside the status.",
         tags: ["nextjs"],
       });
 
@@ -295,12 +327,60 @@ describe("note service", () => {
     }
   });
 
+  it("ranks search results by structured relevance and includes tag matches", async () => {
+    const context = createTestContext();
+
+    try {
+      const titleMatch = await context.service.createNote({
+        title: "pnpm workspace overrides",
+        rawInput: "Root fix for workspace installs",
+        tags: ["tooling"],
+      });
+      const rawInputMatch = await context.service.createNote({
+        title: "workspace install guide",
+        rawInput: "Run pnpm install after changing overrides",
+        tags: ["workspace"],
+      });
+      const tagMatch = await context.service.createNote({
+        title: "lockfile drift checklist",
+        rawInput: "Use this when dependency trees drift",
+        tags: ["pnpm"],
+      });
+
+      await context.database
+        .update(notes)
+        .set({ updatedAt: new Date("2026-03-01T00:00:00.000Z") })
+        .where(eq(notes.id, titleMatch.id));
+      await context.database
+        .update(notes)
+        .set({ updatedAt: new Date("2026-03-03T00:00:00.000Z") })
+        .where(eq(notes.id, rawInputMatch.id));
+      await context.database
+        .update(notes)
+        .set({ updatedAt: new Date("2026-03-02T00:00:00.000Z") })
+        .where(eq(notes.id, tagMatch.id));
+
+      const searchResults = await context.service.listNotes({ query: "pnpm" });
+
+      expect(searchResults.map((note) => note.title)).toEqual([
+        "pnpm workspace overrides",
+        "workspace install guide",
+        "lockfile drift checklist",
+      ]);
+    } finally {
+      context.sqlite.close();
+    }
+  });
+
   it("returns explainable related notes ordered by score", async () => {
     const context = createTestContext();
 
     try {
       const base = await context.service.createNote({
         title: "pnpm workspace alignment",
+        summary: "Keep workspace dependency versions aligned.",
+        problem: "Peer dependency ranges drift across workspace packages.",
+        solution: "Pin shared versions at the workspace root.",
         tags: ["pnpm", "workspace"],
         stack: "Tooling",
         commands: "pnpm install --recursive",
@@ -308,6 +388,9 @@ describe("note service", () => {
       });
       await context.service.createNote({
         title: "docker cache cleanup",
+        summary: "Remove stale Docker build layers.",
+        problem: "Local builds accumulate too much cached data.",
+        solution: "Prune old build cache before rebuilding images.",
         tags: ["docker"],
         stack: "Docker",
         commands: "docker builder prune",
@@ -315,6 +398,9 @@ describe("note service", () => {
       });
       const stronger = await context.service.createNote({
         title: "pnpm workspace install guide",
+        summary: "Install workspace dependencies deterministically.",
+        problem: "Workspace installs drift when shared versions are inconsistent.",
+        solution: "Reinstall after aligning shared versions and lockfiles.",
         tags: ["pnpm", "workspace"],
         stack: "Tooling",
         commands: "pnpm install",
@@ -322,6 +408,9 @@ describe("note service", () => {
       });
       const weaker = await context.service.createNote({
         title: "workspace peer dependency checklist",
+        summary: "Checklist for reviewing workspace peer dependency drift.",
+        problem: "Peer dependency mismatches are easy to miss across packages.",
+        solution: "Review the checklist before publishing or reinstalling.",
         tags: ["workspace"],
         commands: "pnpm list",
         status: "digested",

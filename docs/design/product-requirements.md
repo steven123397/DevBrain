@@ -404,7 +404,9 @@ v0.1 不追求复杂埋点，优先看产品可用性指标：
 - 更稳定的主动复习与拓展提示
 
 补充说明：
-更细的长期实体与关系草案，见 `docs/design/future-data-model.md`。
+- 更细的长期实体与关系草案，见 `docs/design/future-data-model.md`。
+- 关于未来如何用云上合成程序员实验验证知识网络与决策路径成长，见 `docs/design/synthetic-growth-lab.md`。
+- 其中 `docs/design/synthetic-growth-lab.md` 默认只作未来方向记录；除非用户主动声明，否则不参与当前开发决策。
 
 ## 16. 对 Codex 与 Hermes 的协作要求
 

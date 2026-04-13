@@ -115,4 +115,41 @@ describe("update note action", () => {
     expect(updateNote).not.toHaveBeenCalled();
     expect(redirect).not.toHaveBeenCalled();
   });
+
+  it("blocks marking a note as digested until the required structure is filled", async () => {
+    const updateNote = vi.fn();
+    const redirect = vi.fn();
+
+    const result = await runUpdateNoteAction(
+      createInitialUpdateNoteFormState(createValues()),
+      createFormData({
+        summary: "",
+        problem: "",
+        solution: "",
+        status: "digested",
+        confidence: "tested",
+      }),
+      {
+        updateNote,
+        redirect,
+      },
+    );
+
+    expect(result).toMatchObject({
+      status: "error",
+      fieldErrors: {
+        summary: expect.arrayContaining([
+          expect.stringMatching(/digested/i),
+        ]),
+        problem: expect.arrayContaining([
+          expect.stringMatching(/digested/i),
+        ]),
+        solution: expect.arrayContaining([
+          expect.stringMatching(/digested/i),
+        ]),
+      },
+    });
+    expect(updateNote).not.toHaveBeenCalled();
+    expect(redirect).not.toHaveBeenCalled();
+  });
 });

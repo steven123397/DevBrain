@@ -3,18 +3,27 @@ import path from "node:path";
 
 import Database from "better-sqlite3";
 
+import { resolveDatabaseFilePath } from "./database-path";
 import { seedDemoKnowledgeData } from "./demo-seed";
+import { assertSafeSeedTarget } from "./seed.shared";
 
-function resolveDatabaseFilePath() {
-  const configuredPath = process.env.DEVBRAIN_DB_FILE?.trim();
-  if (configuredPath) {
-    return path.resolve(process.cwd(), configuredPath);
+function isTruthyFlag(value: string | undefined) {
+  if (!value) {
+    return false;
   }
 
-  return path.join(process.cwd(), "data", "devbrain.sqlite");
+  return ["1", "true", "yes"].includes(value.trim().toLowerCase());
 }
 
-const databaseFilePath = resolveDatabaseFilePath();
+const databaseTarget = resolveDatabaseFilePath();
+
+assertSafeSeedTarget({
+  databaseFilePath: databaseTarget.databaseFilePath,
+  usesDefaultPath: databaseTarget.usesDefaultPath,
+  allowDefaultReset: isTruthyFlag(process.env.DEVBRAIN_ALLOW_DEFAULT_DB_RESET),
+});
+
+const databaseFilePath = databaseTarget.databaseFilePath;
 
 fs.mkdirSync(path.dirname(databaseFilePath), { recursive: true });
 if (fs.existsSync(databaseFilePath)) {

@@ -39,20 +39,14 @@ describe("createNoteSchema", () => {
     });
   });
 
-  it("allows a partial digested payload with a valid status", () => {
+  it("rejects a digested payload that misses required structured fields", () => {
     const result = createNoteSchema.safeParse({
       title: "hydration mismatch",
       status: "digested",
       solution: "move browser-only logic into useEffect",
     });
 
-    expect(result.success).toBe(true);
-    if (!result.success) {
-      return;
-    }
-
-    expect(result.data.status).toBe("digested");
-    expect(result.data.solution).toBe("move browser-only logic into useEffect");
+    expect(result.success).toBe(false);
   });
 
   it("rejects an invalid source url when present", () => {
@@ -69,7 +63,8 @@ describe("updateNoteSchema", () => {
   it("accepts partial updates and normalizes tags", () => {
     const result = updateNoteSchema.safeParse({
       summary: "  Keep the final fix concise.  ",
-      tags: ["PnPm", " monorepo ", "pnpm"],
+      tags: ["#PnPm", " monorepo ", "pnpm"],
+      stack: " nextjs ",
     });
 
     expect(result.success).toBe(true);
@@ -80,6 +75,7 @@ describe("updateNoteSchema", () => {
     expect(result.data).toMatchObject({
       summary: "Keep the final fix concise.",
       tags: ["pnpm", "monorepo"],
+      stack: "Next.js",
     });
   });
 });
@@ -89,8 +85,8 @@ describe("noteFiltersSchema", () => {
     const result = noteFiltersSchema.parse({
       query: " hydration ",
       status: "inbox",
-      tag: " PnPm ",
-      stack: " Next.js ",
+      tag: " #PnPm ",
+      stack: " nextjs ",
     });
 
     expect(result).toMatchObject({

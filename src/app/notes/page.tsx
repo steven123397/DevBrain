@@ -75,6 +75,19 @@ function resolveEmptyState(filters: {
   };
 }
 
+function describeResultOrdering(filters: {
+  query?: string;
+  sort: "updatedAtDesc" | "createdAtDesc";
+}) {
+  const secondaryLabel = filters.sort === "updatedAtDesc" ? "最近更新" : "最近创建";
+
+  if (filters.query) {
+    return `综合相关性（同分后按${secondaryLabel}）`;
+  }
+
+  return secondaryLabel;
+}
+
 export default async function NotesPage({
   searchParams,
 }: {
@@ -146,7 +159,7 @@ export default async function NotesPage({
             {notes.length} 条结果
           </p>
           <p className="text-sm text-slate-600">
-            当前排序：{filters.sort === "updatedAtDesc" ? "最近更新" : "最近创建"}
+            当前排序：{describeResultOrdering(filters)}
           </p>
         </section>
 

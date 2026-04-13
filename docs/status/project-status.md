@@ -1,7 +1,7 @@
 # DevBrain 项目状态
 
 文档状态：active
-最后更新：2026-04-12
+最后更新：2026-04-13
 当前阶段：MVP / v0.1 handoff
 当前分支：`feat/bootstrap-app-shell`
 关联计划：`docs/plan/implementation-plan.md`
@@ -9,7 +9,7 @@
 
 ## 当前焦点
 
-Task 10 已完成，当前焦点切换到 MVP 评审与后续风险收口。
+已完成首轮 code review follow-up，当前焦点切换到剩余相关推荐质量验证与下一阶段排期。
 
 ## 已完成
 
@@ -54,27 +54,32 @@ Task 10 已完成，当前焦点切换到 MVP 评审与后续风险收口。
 - 已补齐迁移入口：新增 `src/db/migrate.ts` 与 `src/db/migrate.shared.ts`，并在 `package.json` 中补充 `pnpm db:generate`、`pnpm db:migrate`。
 - 已完成 handoff 留痕：`docs/plan/implementation-plan.md` 补充本地 review 流程，`docs/plan/history.md` 记录本轮 MVP handoff checkpoint。
 - 已校准治理口径：`AGENTS.md` 与 `docs/index.md` 已移除对已删除兼容入口文档的旧描述，避免 handoff 后继续误导。
+- 已完成首轮 code review 风险收口：`src/features/notes/note.search.ts` 与 `src/features/notes/note.service.ts` 已加入显式相关性排序，并把标签 / 技术栈纳入搜索辅助召回。
+- 已完成 `Digested` 质量门槛：`src/features/notes/note.schemas.ts`、`src/app/actions/update-note.shared.ts`、`src/components/note-editor-form.tsx` 现会阻止缺少 `summary + problem + solution` 且没有 `tag/stack` 的低质量 digest。
+- 已完成最小输入治理：新增 `src/features/notes/note.normalization.ts`，对常见标签 / 技术栈别名做 canonicalization，降低筛选、搜索和相关推荐的输入分叉。
+- 已完成 seed 安全收口：新增 `src/db/database-path.ts`、`src/db/seed.shared.ts`，`pnpm seed` 默认不再直接覆盖隐式主库；`README.md` 已同步改为显式 demo DB review 流程。
+- 已同步更新 demo 数据与 happy-path 断言，使 seeded Digested 条目符合新门槛，并让浏览器主流程适配更宽的搜索召回。
 
 ## 进行中
 
-- 主线 MVP 任务已完成，当前进入产品评审、风险收口与下一阶段排期。
-- 当前搜索与筛选主闭环已可用，后续若要进一步提升检索性能或召回质量，可在 `src/features/notes/note.search.ts` 的 seam 上升级到 SQLite FTS。
-- 当前相关推荐已具备可解释规则闭环，后续若要引入混合召回或 embeddings，可沿 `src/features/notes/note.related.ts` 的 seam 扩展而不重写详情页展示。
+- 主线 MVP 任务已完成，当前进入已修复 findings 的复验、相关推荐质量判断与下一阶段排期。
+- 当前搜索与筛选主闭环已升级为“结构字段加权 + 标签 / 技术栈辅助召回”；后续若数据规模继续增长，可沿 `src/features/notes/note.search.ts` 的 seam 升级到 SQLite FTS。
+- 当前相关推荐仍保持可解释规则闭环，后续若要引入更稳的候选集或排序信号，可沿 `src/features/notes/note.related.ts` 的 seam 扩展而不重写详情页展示。
 - 后续新增阶段性计划或评审结论时，将分别落到 `docs/plan/*.md` 与 `docs/status/code-review-status.md`。
 
 ## 风险 / 阻塞
 
 - 当前本地环境的 `pnpm` 会对原生依赖启用 build script 审批；新装依赖后需确认 `better-sqlite3` 绑定已经构建完成。
-- 当前搜索仍基于多字段关键词召回而非 SQLite FTS；如果数据规模明显增长，需要优先评估索引与检索性能升级。
+- 当前搜索虽已补齐显式相关性排序，但仍未引入 SQLite FTS；如果数据规模明显增长，需要优先评估索引与检索性能升级。
 - 当前相关推荐采用固定权重规则，尚未纳入“最近访问关系加权”或更细的质量反馈；如果后续出现误召回，需要再评估权重和排序信号。
-- `pnpm seed` 会重置目标 SQLite 文件并写入 demo 数据；如果后续要作用于真实本地库，需要先确认目标路径或备份现有数据。
+- `pnpm seed` 现已拒绝直接覆盖隐式默认主库；若后续确需重置主库，必须显式设置 `DEVBRAIN_ALLOW_DEFAULT_DB_RESET=true`，否则命令会中止。
 - 本地 fresh setup 仍需要显式执行 `pnpm db:migrate` 或 `pnpm seed` 才会创建表结构，运行前置步骤不能省略。
 - 旧兼容入口文档已被清理；如果外部书签、脚本或历史链接仍指向 `docs/product-requirements.md`、`docs/future-data-model.md`、`docs/implementation-plan.md`，需要同步更新到新路径。
 
 ## 下一步
 
-- 先做一轮产品评审，按 `README.md` 的 review flow 复走主路径并确认演示口径。
-- 根据评审结论决定下一阶段优先级：优先搜索性能（FTS）、相关推荐质量，还是更稳的本地初始化 / 备份体验。
+- 先按更新后的 `README.md` review flow 用独立 demo DB 复走主路径，验证新的 Digested 门槛和搜索相关性是否符合真实使用直觉。
+- 根据评审结论决定下一阶段优先级：优先搜索性能（FTS）、相关推荐质量，还是更稳的 demo / backup 体验。
 - 如果发生评审，统一把 findings 写入 `docs/status/code-review-status.md`；若进入下一阶段，先新增对应 `docs/plan/*.md`。
 
 ## 验证记录
@@ -100,3 +105,4 @@ Task 10 已完成，当前焦点切换到 MVP 评审与后续风险收口。
 - 2026-04-12：Task 9 已通过 `pnpm lint`、`pnpm test`、`pnpm build`、`pnpm test:e2e`；并通过 `DEVBRAIN_DB_FILE=/tmp/devbrain-seed-verification.sqlite pnpm seed` 验证 demo seed 可用。
 - 2026-04-12：Task 10 红灯验证通过，`tests/e2e/happy-path.spec.ts` 初版因使用过宽的 `Digested` 文本断言失败，暴露出 happy-path 断言需要按最终详情页结构收紧。
 - 2026-04-12：Task 10 已通过 `pnpm lint`、`pnpm test`、`pnpm build`、`pnpm test:e2e`；并通过 `DEVBRAIN_DB_FILE=/tmp/devbrain-migrate-verification.sqlite pnpm db:migrate` 与 `DEVBRAIN_DB_FILE=/tmp/devbrain-seed-verification.sqlite pnpm seed` 验证本地 handoff 命令可用。
+- 2026-04-13：code review follow-up 已通过 `pnpm test`、`pnpm lint`、`pnpm build`、`pnpm test:e2e`。

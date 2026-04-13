@@ -1,4 +1,5 @@
 import {
+  getDigestedFieldErrors,
   updateNoteSchema,
   type UpdateNoteInput,
 } from "@/features/notes/note.schemas";
@@ -187,6 +188,25 @@ function selectFieldErrors(
   };
 }
 
+function mergeFieldErrors(
+  base: Partial<Record<keyof UpdateNoteFormValues, string[]>>,
+  extra: Partial<Record<keyof UpdateNoteFormValues, string[]>>,
+): Partial<Record<keyof UpdateNoteFormValues, string[]>> {
+  const merged = { ...base };
+
+  for (const [field, messages] of Object.entries(extra) as Array<
+    [keyof UpdateNoteFormValues, string[] | undefined]
+  >) {
+    if (!messages || messages.length === 0) {
+      continue;
+    }
+
+    merged[field] = [...(merged[field] ?? []), ...messages];
+  }
+
+  return merged;
+}
+
 export function extractUpdateNoteInput(
   formData: FormData,
 ): UpdateNoteActionInput {
@@ -270,6 +290,16 @@ export async function runUpdateNoteAction(
       status: "error",
       message: "请先修正表单后再保存。",
       fieldErrors: selectFieldErrors(parsed.error.flatten().fieldErrors),
+      values: buildFormValues(rawValues),
+    };
+  }
+
+  const digestedFieldErrors = getDigestedFieldErrors(parsed.data);
+  if (Object.keys(digestedFieldErrors).length > 0) {
+    return {
+      status: "error",
+      message: "要标记为 Digested，请先补齐摘要、问题、方案，并至少填写一个标签或技术栈。",
+      fieldErrors: mergeFieldErrors({}, digestedFieldErrors),
       values: buildFormValues(rawValues),
     };
   }

@@ -16,6 +16,7 @@ import { noteTags, notes, tags } from "@/db/schema";
 
 import {
   createNoteSchema,
+  getDigestedFieldErrors,
   noteFiltersSchema,
   type CreateNoteInput,
   type NoteFiltersInput,
@@ -33,7 +34,7 @@ import {
   buildRelatedRecommendations,
   type RelatedNoteRecommendation,
 } from "./note.related";
-import { buildNoteSearchCondition } from "./note.search";
+import { scoreNoteSearch } from "./note.search";
 
 function toIsoString(value: Date | number): string {
   if (value instanceof Date) {
@@ -74,6 +75,32 @@ function noteOrderBy(filters: NoteFiltersValues) {
   }
 
   return [desc(notes.updatedAt), desc(notes.createdAt)] as const;
+}
+
+function compareNotesBySort(
+  left: KnowledgeNote,
+  right: KnowledgeNote,
+  filters: NoteFiltersValues,
+) {
+  if (filters.sort === "createdAtDesc") {
+    if (right.createdAt !== left.createdAt) {
+      return right.createdAt.localeCompare(left.createdAt);
+    }
+
+    if (right.updatedAt !== left.updatedAt) {
+      return right.updatedAt.localeCompare(left.updatedAt);
+    }
+  } else {
+    if (right.updatedAt !== left.updatedAt) {
+      return right.updatedAt.localeCompare(left.updatedAt);
+    }
+
+    if (right.createdAt !== left.createdAt) {
+      return right.createdAt.localeCompare(left.createdAt);
+    }
+  }
+
+  return left.title.localeCompare(right.title);
 }
 
 export function createNoteService(database: typeof db = db) {
@@ -205,10 +232,6 @@ export function createNoteService(database: typeof db = db) {
     const filters = noteFiltersSchema.parse(input);
     const conditions = [];
 
-    if (filters.query) {
-      conditions.push(buildNoteSearchCondition(filters.query));
-    }
-
     if (filters.status) {
       conditions.push(eq(notes.status, filters.status));
     }
@@ -231,6 +254,32 @@ export function createNoteService(database: typeof db = db) {
       }
 
       conditions.push(inArray(notes.id, matchingNoteIds));
+    }
+
+    if (filters.query) {
+      const records = database
+        .select()
+        .from(notes)
+        .where(conditions.length > 0 ? and(...conditions) : undefined)
+        .all();
+
+      const noteTagMap = await getNoteTags(records.map((record) => record.id));
+      return records
+        .map((record) => mapNoteRecord(record, noteTagMap))
+        .map((note) => ({
+          note,
+          score: scoreNoteSearch(note, filters.query ?? ""),
+        }))
+        .filter((entry) => entry.score > 0)
+        .sort((left, right) => {
+          if (right.score !== left.score) {
+            return right.score - left.score;
+          }
+
+          return compareNotesBySort(left.note, right.note, filters);
+        })
+        .slice(0, filters.limit)
+        .map((entry) => entry.note);
     }
 
     const [primaryOrder, secondaryOrder] = noteOrderBy(filters);
@@ -294,6 +343,23 @@ export function createNoteService(database: typeof db = db) {
     }
 
     const parsed = updateNoteSchema.parse(input);
+    const existingTagMap = await getNoteTags([id]);
+    const currentNote = mapNoteRecord(existing, existingTagMap);
+    const mergedForValidation = {
+      status: parsed.status ?? currentNote.status,
+      summary: parsed.summary ?? currentNote.summary,
+      problem: parsed.problem ?? currentNote.problem,
+      solution: parsed.solution ?? currentNote.solution,
+      tags: parsed.tags ?? currentNote.tags,
+      stack: parsed.stack ?? currentNote.stack,
+    };
+    const digestedFieldErrors = getDigestedFieldErrors(mergedForValidation);
+    if (Object.keys(digestedFieldErrors).length > 0) {
+      throw new Error(
+        "Digested notes require summary, problem, solution, and at least one tag or stack.",
+      );
+    }
+
     const notePatch: Partial<typeof notes.$inferInsert> = {};
 
     const assignIfPresent = <K extends keyof UpdateNoteValues>(key: K, targetKey: keyof typeof notes.$inferInsert) => {

@@ -16,13 +16,15 @@ export function seedDemoKnowledgeData(sqlite: Database.Database) {
 
   sqlite.exec(`
     insert into notes (
-      id, title, raw_input, summary, stack, status, confidence, source_type, created_at, updated_at
+      id, title, raw_input, summary, problem, solution, stack, status, confidence, source_type, created_at, updated_at
     ) values
       (
         'note-1',
         'hydration mismatch',
         'SSR warning after reading window',
         'Move browser-only logic into useEffect.',
+        'Server and client rendered different markup during hydration.',
+        'Delay browser-only reads until the client has mounted.',
         'Next.js',
         'digested',
         'tested',
@@ -34,6 +36,8 @@ export function seedDemoKnowledgeData(sqlite: Database.Database) {
         'note-2',
         'pnpm peer dep fix',
         'used overrides for workspace alignment',
+        null,
+        null,
         null,
         'Tooling',
         'inbox',
@@ -47,6 +51,8 @@ export function seedDemoKnowledgeData(sqlite: Database.Database) {
         'next.js hydration guard',
         'client mismatch after reading browser globals',
         'Wrap browser-only access in useEffect and a mounted guard.',
+        'Browser globals changed the initial render output.',
+        'Guard browser-only branches until hydration finishes.',
         'Next.js',
         'digested',
         'tested',
