@@ -26,7 +26,13 @@
 # misc
 .DS_Store
 *.pem
-/.claude/worktrees/
+/.codex/
+/.claude/
+/.cursor/
+/.gemini/
+/.windsurf/
+/.aider/
+/.roo/
 
 # debug
 npm-debug.log*

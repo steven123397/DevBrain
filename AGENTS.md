@@ -11,7 +11,8 @@
 
 ## 治理基线
 
-- 本仓库的治理映射配置在 `.codex/project-governance.yaml`。
+- 仓库级治理规则以 `AGENTS.md` 与 `docs/index.md` 为准。
+- `.codex/`、`.claude/` 等本地工具目录只作本地使用，统一通过 `.gitignore` 忽略，不纳入版本管理。
 - `README.md` 只负责项目总览、本地命令和入口导航，不记录实时执行状态。
 - `docs/codex-kickoff-brief.md` 是实现会话的快速背景，不替代 PRD。
 - `docs/design/product-requirements.md` 与 `docs/design/future-data-model.md` 负责长期边界、取舍与扩展方向。

@@ -1,7 +1,7 @@
 # DevBrain 文档索引
 
 文档状态：active
-最后更新：2026-04-12
+最后更新：2026-04-15
 适用范围：仓库级文档导航、治理映射与执行工作流
 
 ## 1. 推荐阅读顺序
@@ -19,7 +19,7 @@
 
 - 改产品边界：`docs/design/product-requirements.md` -> `docs/design/future-data-model.md` -> `docs/status/project-status.md`
 - 推进实现任务：`docs/plan/implementation-plan.md` -> `docs/status/project-status.md` -> 对应功能代码
-- 做文档治理：`.codex/project-governance.yaml` -> `AGENTS.md` -> 本页
+- 做文档治理：`AGENTS.md` -> 本页 -> 对应 design / plan / status 文档
 - 做代码审查：`docs/status/code-review-status.md` -> `docs/status/project-status.md`
 
 ## 2. 文档角色映射
@@ -28,7 +28,6 @@
 | --- | --- | --- |
 | 项目总览 | `README.md` | 面向人类读者的项目简介、命令和入口导航 |
 | 根规则 | `AGENTS.md` | 仓库默认治理规则、验证基线、回写原则 |
-| 治理配置 | `.codex/project-governance.yaml` | 文档角色到物理路径的稳定映射 |
 | 背景 | `docs/codex-kickoff-brief.md` | 给实现会话的快速背景，不替代 PRD |
 | 设计 | `docs/design/product-requirements.md`、`docs/design/future-data-model.md`、`docs/design/synthetic-growth-lab.md` | 长期边界、取舍、未来扩展缝与未来实验方向记录 |
 | 执行计划 | `docs/plan/implementation-plan.md`、`docs/plan/*.md` | 任务拆分、完成定义、验证与回写要求 |
@@ -36,6 +35,8 @@
 | 当前状态 | `docs/status/project-status.md` | 当前阶段、已完成事项、风险、下一步 |
 | Review findings | `docs/status/code-review-status.md` | 审查发现、结论与跟进状态 |
 | 模板 | `docs/design/template.md`、`docs/plan/template.md`、`docs/status/template.md` | 新文档起草模板 |
+
+说明：如本地存在 `.codex/project-governance.yaml`，它只作为本地工具读取的辅助配置，不属于仓库的版本化事实来源。
 
 ## 3. 工作流约定
 
@@ -55,6 +56,7 @@
 ### 提交与验证
 
 - 提交（commit）不是默认动作，只有用户明确要求时才执行。
+- `.codex/`、`.claude/`、`.cursor/`、`.gemini/`、`.windsurf/`、`.aider/`、`.roo/` 等本地工具目录统一通过 `.gitignore` 忽略，不作为仓库事实来源。
 - 代码任务默认验证基线：`pnpm lint`、`pnpm test`、`pnpm build`。
 - 文档治理任务至少要验证文档入口、路径引用和工作流说明保持一致。
 

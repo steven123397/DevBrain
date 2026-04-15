@@ -1,7 +1,7 @@
 # DevBrain 项目状态
 
 文档状态：active
-最后更新：2026-04-13
+最后更新：2026-04-15
 当前阶段：MVP / v0.1 handoff
 当前分支：`feat/bootstrap-app-shell`
 关联计划：`docs/plan/implementation-plan.md`
@@ -9,12 +9,14 @@
 
 ## 当前焦点
 
-已完成首轮 code review follow-up，当前焦点切换到剩余相关推荐质量验证与下一阶段排期。
+主线 MVP 已完成，当前只剩相关推荐质量验证与下一阶段排期收口。
 
 ## 已完成
 
 - 已完成 Task 1：项目骨架、首页 Shell、测试与基础脚本已经就绪。
-- 已完成仓库治理基线：`docs/index.md`、`.codex/project-governance.yaml`、design / plan / status 模板已经落地。
+- 已完成仓库治理基线：`AGENTS.md`、`docs/index.md`、design / plan / status 模板已经落地。
+- 已完成本地工具目录治理调整：`.codex/`、`.claude/`、`.cursor/`、`.gemini/`、`.windsurf/`、`.aider/`、`.roo/` 已统一交给 `.gitignore` 管理，避免进入版本管理。
+- 已收口治理配置策略：`.codex/project-governance.yaml` 回归本地辅助配置，不再作为仓库提交内容；版本化治理入口仍以 `AGENTS.md` 与 `docs/index.md` 为准。
 - 已完成文档归位：产品与未来建模文档已迁移到 `docs/design/`，当前活跃计划已迁移到 `docs/plan/`，旧兼容入口文档已完成清理。
 - 已完成 Task 2：补齐 `src/features/notes/note.types.ts`、`src/db/schema.ts`、`src/db/client.ts`、`drizzle.config.ts`。
 - 已生成首个 SQLite migration：`src/db/migrations/0000_dapper_franklin_storm.sql`。
@@ -62,10 +64,10 @@
 
 ## 进行中
 
-- 主线 MVP 任务已完成，当前进入已修复 findings 的复验、相关推荐质量判断与下一阶段排期。
-- 当前搜索与筛选主闭环已升级为“结构字段加权 + 标签 / 技术栈辅助召回”；后续若数据规模继续增长，可沿 `src/features/notes/note.search.ts` 的 seam 升级到 SQLite FTS。
-- 当前相关推荐仍保持可解释规则闭环，后续若要引入更稳的候选集或排序信号，可沿 `src/features/notes/note.related.ts` 的 seam 扩展而不重写详情页展示。
-- 后续新增阶段性计划或评审结论时，将分别落到 `docs/plan/*.md` 与 `docs/status/code-review-status.md`。
+- 当前仅剩相关推荐质量验证与下一阶段排期。
+- 若数据规模继续增长，可沿 `src/features/notes/note.search.ts` 的 seam 评估是否升级到 SQLite FTS。
+- 若相关推荐在真实使用下出现误召回或价值不足，可沿 `src/features/notes/note.related.ts` 的 seam 继续补候选集或排序信号。
+- 后续新增阶段性计划或评审结论时，分别落到 `docs/plan/*.md` 与 `docs/status/code-review-status.md`。
 
 ## 风险 / 阻塞
 
@@ -78,9 +80,9 @@
 
 ## 下一步
 
-- 先按更新后的 `README.md` review flow 用独立 demo DB 复走主路径，验证新的 Digested 门槛和搜索相关性是否符合真实使用直觉。
+- 按更新后的 `README.md` review flow 用独立 demo DB 复走主路径，重点验证相关推荐是否真的帮助复用。
 - 根据评审结论决定下一阶段优先级：优先搜索性能（FTS）、相关推荐质量，还是更稳的 demo / backup 体验。
-- 如果发生评审，统一把 findings 写入 `docs/status/code-review-status.md`；若进入下一阶段，先新增对应 `docs/plan/*.md`。
+- 如果发生新的评审，统一把 findings 写入 `docs/status/code-review-status.md`；若进入下一阶段，先新增对应 `docs/plan/*.md`。
 
 ## 验证记录
 
@@ -106,3 +108,4 @@
 - 2026-04-12：Task 10 红灯验证通过，`tests/e2e/happy-path.spec.ts` 初版因使用过宽的 `Digested` 文本断言失败，暴露出 happy-path 断言需要按最终详情页结构收紧。
 - 2026-04-12：Task 10 已通过 `pnpm lint`、`pnpm test`、`pnpm build`、`pnpm test:e2e`；并通过 `DEVBRAIN_DB_FILE=/tmp/devbrain-migrate-verification.sqlite pnpm db:migrate` 与 `DEVBRAIN_DB_FILE=/tmp/devbrain-seed-verification.sqlite pnpm seed` 验证本地 handoff 命令可用。
 - 2026-04-13：code review follow-up 已通过 `pnpm test`、`pnpm lint`、`pnpm build`、`pnpm test:e2e`。
+- 2026-04-15：已验证 `.gitignore`、`AGENTS.md`、`docs/index.md` 的路径与治理口径一致，并确认 `.codex/` 等本地目录不再作为仓库提交对象，`.codex/project-governance.yaml` 仅保留为本地辅助配置。
