@@ -100,6 +100,7 @@ pnpm build
 - 项目规则：`AGENTS.md`
 - 快速背景：`docs/codex-kickoff-brief.md`
 - 产品边界：`docs/design/product-requirements.md`
+- 下一阶段设计：`docs/design/v0.1-validation-lab.md`、`docs/design/search-and-recall-evolution.md`、`docs/design/v0.2-v0.3-product-blueprint.md`
 - 当前执行计划：`docs/plan/implementation-plan.md`
 - 当前状态：`docs/status/project-status.md`
 
