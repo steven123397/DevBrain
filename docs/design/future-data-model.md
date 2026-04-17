@@ -6,7 +6,7 @@
 
 ## 1. 这份文档解决什么问题
 
-`docs/design/product-requirements.md` 解决的是产品边界，`docs/plan/implementation-plan.md` 解决的是 MVP 落地顺序。
+`docs/design/product-requirements.md` 解决的是产品边界，阶段性 `docs/plan/*.md` 解决的是活跃任务的落地顺序，已完成阶段统一归档到 `docs/plan/history.md`。
 
 这份文档单独回答一个更长期的问题：
 

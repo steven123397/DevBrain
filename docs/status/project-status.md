@@ -1,15 +1,15 @@
 # DevBrain 项目状态
 
 文档状态：active
-最后更新：2026-04-15
+最后更新：2026-04-17
 当前阶段：MVP / v0.1 handoff
 当前分支：`feat/bootstrap-app-shell`
-关联计划：`docs/plan/implementation-plan.md`
+关联计划：无（历史归档见 `docs/plan/history.md`）
 关联规则：`docs/index.md`、`AGENTS.md`
 
 ## 当前焦点
 
-主线 MVP 已完成，当前只剩相关推荐质量验证与下一阶段排期收口。
+主线 MVP 与本轮搜索 / 相关推荐质量升级已完成；基于更大样本的本地评估，当前仍以层 1 规则增强为主，暂不进入 SQLite FTS。
 
 ## 已完成
 
@@ -17,7 +17,7 @@
 - 已完成仓库治理基线：`AGENTS.md`、`docs/index.md`、design / plan / status 模板已经落地。
 - 已完成本地工具目录治理调整：`.codex/`、`.claude/`、`.cursor/`、`.gemini/`、`.windsurf/`、`.aider/`、`.roo/` 已统一交给 `.gitignore` 管理，避免进入版本管理。
 - 已收口治理配置策略：`.codex/project-governance.yaml` 回归本地辅助配置，不再作为仓库提交内容；版本化治理入口仍以 `AGENTS.md` 与 `docs/index.md` 为准。
-- 已完成文档归位：产品与未来建模文档已迁移到 `docs/design/`，当前活跃计划已迁移到 `docs/plan/`，旧兼容入口文档已完成清理。
+- 已完成文档归位：产品与未来建模文档已迁移到 `docs/design/`，阶段性计划统一落在 `docs/plan/` 并在完成后归档到 `docs/plan/history.md`，旧兼容入口文档已完成清理。
 - 已完成 Task 2：补齐 `src/features/notes/note.types.ts`、`src/db/schema.ts`、`src/db/client.ts`、`drizzle.config.ts`。
 - 已生成首个 SQLite migration：`src/db/migrations/0000_dapper_franklin_storm.sql`。
 - 已补充 Task 2 的单元测试：`tests/unit/db-schema.test.ts`。
@@ -54,17 +54,24 @@
 - 已完成 Task 10：新增 `tests/e2e/happy-path.spec.ts`，把“创建 -> 搜索 -> 打开 -> 整理 -> 打开相关条目”串成单条可复验的浏览器主流程。
 - 已补齐交付文档：`README.md` 现明确记录本地 setup、数据库路径、迁移命令、测试命令、MVP 范围与非目标。
 - 已补齐迁移入口：新增 `src/db/migrate.ts` 与 `src/db/migrate.shared.ts`，并在 `package.json` 中补充 `pnpm db:generate`、`pnpm db:migrate`。
-- 已完成 handoff 留痕：`docs/plan/implementation-plan.md` 补充本地 review 流程，`docs/plan/history.md` 记录本轮 MVP handoff checkpoint。
+- 已完成 handoff 留痕：MVP 主线与搜索质量升级的阶段性计划都已归档到 `docs/plan/history.md`，当前不再保留活跃计划文件。
 - 已校准治理口径：`AGENTS.md` 与 `docs/index.md` 已移除对已删除兼容入口文档的旧描述，避免 handoff 后继续误导。
 - 已完成首轮 code review 风险收口：`src/features/notes/note.search.ts` 与 `src/features/notes/note.service.ts` 已加入显式相关性排序，并把标签 / 技术栈纳入搜索辅助召回。
 - 已完成 `Digested` 质量门槛：`src/features/notes/note.schemas.ts`、`src/app/actions/update-note.shared.ts`、`src/components/note-editor-form.tsx` 现会阻止缺少 `summary + problem + solution` 且没有 `tag/stack` 的低质量 digest。
 - 已完成最小输入治理：新增 `src/features/notes/note.normalization.ts`，对常见标签 / 技术栈别名做 canonicalization，降低筛选、搜索和相关推荐的输入分叉。
 - 已完成 seed 安全收口：新增 `src/db/database-path.ts`、`src/db/seed.shared.ts`，`pnpm seed` 默认不再直接覆盖隐式主库；`README.md` 已同步改为显式 demo DB review 流程。
 - 已同步更新 demo 数据与 happy-path 断言，使 seeded Digested 条目符合新门槛，并让浏览器主流程适配更宽的搜索召回。
+- 已完成搜索与相关推荐质量升级：`src/features/notes/note.normalization.ts` 已扩成搜索与 related 共用的 canonicalization / search signal 共享层，覆盖 `drizzle-orm`、`drizzle-kit`、`db:migrate`、`better-sqlite3`、`DEVBRAIN_DB_FILE`、`validation db`、`默认主库` 等术语分叉。
+- 已完成搜索召回增强：`src/features/notes/note.search.ts` 已补中文连续片段 token、结构化命令 / 路径 token 与 canonical phrase expansion，并重新调高数据库语境下 `commands / references / why` 的排序权重。
+- 已完成搜索规则层小修：`src/features/notes/note.search.ts` 现会在评分阶段过滤 `db` / `file` 这类泛 token，并对 `pnpm` 等宽泛包管理器查询压低 `solution / why / commands / references` 的命令型权重，减少 `DEVBRAIN_DB_FILE` 尾部噪声与 `pnpm` 跨簇误上浮。
+- 已完成相关推荐去噪：`src/features/notes/note.related.ts` 已整合 canonical signal、结构化命令 token 与标题泛词降权，数据库 seed / migrate / bindings 链路更稳定，`server` / `file` 类噪声不再轻易抬高无关条目。
+- 已补齐 R1~R3 回归验证：新增 `tests/unit/note-normalization.test.ts`，并扩展 `tests/unit/note-search.test.ts`、`tests/unit/note-related.test.ts`、`tests/unit/note-service.test.ts` 覆盖中文模糊查询、数据库边界词、alias 归一、数据库排序权重与相关推荐链路。
+- 已补最小浏览器级回归：`src/db/demo-seed.ts` 新增数据库安全边界样本，`tests/e2e/search-notes.spec.ts` 与 `tests/e2e/related-notes.spec.ts` 现覆盖 `/notes?q=默认主库` 命中目标卡片，以及数据库详情页优先带出 `db:migrate` 相邻条目。
+- 已完成更大样本的本地搜索 / related 评估：基于内存 SQLite 构造 28 条混合样本复核 `默认主库`、`validation 库`、`DEVBRAIN_DB_FILE`、`db:migrate`、`drizzle orm`、`输入框改了列表没变`、`hydration`、`pnpm` 等查询后，当前结论是搜索主路径仍可解释且可用，暂不需要引入 SQLite FTS。
 
 ## 进行中
 
-- 当前仅剩相关推荐质量验证与下一阶段排期。
+- 当前无进行中的实现任务；若继续收口搜索质量，优先补规则层的小修，而不是直接进入 SQLite FTS。
 - 若数据规模继续增长，可沿 `src/features/notes/note.search.ts` 的 seam 评估是否升级到 SQLite FTS。
 - 若相关推荐在真实使用下出现误召回或价值不足，可沿 `src/features/notes/note.related.ts` 的 seam 继续补候选集或排序信号。
 - 后续新增阶段性计划或评审结论时，分别落到 `docs/plan/*.md` 与 `docs/status/code-review-status.md`。
@@ -73,15 +80,17 @@
 
 - 当前本地环境的 `pnpm` 会对原生依赖启用 build script 审批；新装依赖后需确认 `better-sqlite3` 绑定已经构建完成。
 - 当前搜索虽已补齐显式相关性排序，但仍未引入 SQLite FTS；如果数据规模明显增长，需要优先评估索引与检索性能升级。
+- 本轮大样本评估里，`DEVBRAIN_DB_FILE` 查询尾部仍会沾到 `file` 类泛词噪声，`pnpm` 这类泛查询也还会混入部分数据库 / 工具链条目；这更像规则权重与 stopword 细化问题，不是当前必须引入 FTS 的证据。
 - 当前相关推荐采用固定权重规则，尚未纳入“最近访问关系加权”或更细的质量反馈；如果后续出现误召回，需要再评估权重和排序信号。
 - `pnpm seed` 现已拒绝直接覆盖隐式默认主库；若后续确需重置主库，必须显式设置 `DEVBRAIN_ALLOW_DEFAULT_DB_RESET=true`，否则命令会中止。
 - 本地 fresh setup 仍需要显式执行 `pnpm db:migrate` 或 `pnpm seed` 才会创建表结构，运行前置步骤不能省略。
-- 旧兼容入口文档已被清理；如果外部书签、脚本或历史链接仍指向 `docs/product-requirements.md`、`docs/future-data-model.md`、`docs/implementation-plan.md`，需要同步更新到新路径。
+- 旧兼容入口文档与历史活跃计划文件已被清理；如果外部书签、脚本或历史链接仍指向旧路径，需要同步更新到 `docs/index.md`、`docs/status/project-status.md`、`docs/plan/history.md` 或新的 `docs/plan/*.md`。
 
 ## 下一步
 
-- 按更新后的 `README.md` review flow 用独立 demo DB 复走主路径，重点验证相关推荐是否真的帮助复用。
-- 根据评审结论决定下一阶段优先级：优先搜索性能（FTS）、相关推荐质量，还是更稳的 demo / backup 体验。
+- 按更新后的 `README.md` review flow 用独立 demo / validation DB 继续复走主路径，重点验证中文模糊检索与数据库相关推荐是否稳定帮助复用。
+- 在继续评估 SQLite FTS 之前，优先用真实使用样本继续观察这两处规则层小修是否足够稳定：`DEVBRAIN_DB_FILE` 查询尾部噪声，以及 `pnpm` 泛查询里的跨簇误上浮。
+- 只有当 Top 5 命中率、首屏可用性或查询复杂度继续明显退化时，再进入 SQLite FTS 计划设计。
 - 如果发生新的评审，统一把 findings 写入 `docs/status/code-review-status.md`；若进入下一阶段，先新增对应 `docs/plan/*.md`。
 
 ## 验证记录
@@ -109,3 +118,7 @@
 - 2026-04-12：Task 10 已通过 `pnpm lint`、`pnpm test`、`pnpm build`、`pnpm test:e2e`；并通过 `DEVBRAIN_DB_FILE=/tmp/devbrain-migrate-verification.sqlite pnpm db:migrate` 与 `DEVBRAIN_DB_FILE=/tmp/devbrain-seed-verification.sqlite pnpm seed` 验证本地 handoff 命令可用。
 - 2026-04-13：code review follow-up 已通过 `pnpm test`、`pnpm lint`、`pnpm build`、`pnpm test:e2e`。
 - 2026-04-15：已验证 `.gitignore`、`AGENTS.md`、`docs/index.md` 的路径与治理口径一致，并确认 `.codex/` 等本地目录不再作为仓库提交对象，`.codex/project-governance.yaml` 仅保留为本地辅助配置。
+- 2026-04-17：搜索 / 相关推荐质量升级已按红绿循环完成，先通过 `pnpm test -- tests/unit/note-normalization.test.ts tests/unit/note-search.test.ts tests/unit/note-related.test.ts tests/unit/note-service.test.ts` 固化并转绿 R1~R3 回归，再通过 `pnpm lint`、`pnpm test`、`pnpm build` 完成最终验证。
+- 2026-04-17：最小浏览器级回归已补齐；先通过 `pnpm test:e2e -- tests/e2e/search-notes.spec.ts tests/e2e/related-notes.spec.ts` 完成红绿循环，再通过 `pnpm lint` 与 `pnpm test:e2e` 验证扩展后的 demo seed 未破坏现有 seeded 浏览器用例。
+- 2026-04-17：已通过一次性本地评估脚本在内存 SQLite 上构造 28 条混合样本，复核搜索与相关推荐在更大样本下的命中与排序；查询 `默认主库`、`validation 库`、`DEVBRAIN_DB_FILE`、`db:migrate`、`drizzle orm`、`输入框改了列表没变`、`hydration`、`pnpm` 后，当前判断仍以规则层增强优先，暂不进入 SQLite FTS。
+- 2026-04-17：已完成一轮搜索规则层小修；先通过 `pnpm test -- tests/unit/note-search.test.ts tests/unit/note-service.test.ts` 固化 `DEVBRAIN_DB_FILE` 尾部噪声与 `pnpm` 排序回归，再通过 `pnpm test:e2e -- tests/e2e/search-notes.spec.ts` 与 `pnpm lint` 验证搜索主路径未回退。

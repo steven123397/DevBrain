@@ -5,8 +5,8 @@
 1. 先读 `docs/index.md`，确认本轮任务的文档入口和单一事实来源。
 2. 再按任务读取对应权威文档：
    - 产品边界与验收：`docs/design/product-requirements.md`
-   - 实施顺序与任务拆解：`docs/plan/implementation-plan.md`
-   - 当前进度与风险：`docs/status/project-status.md`
+   - 当前进度、风险与是否存在活跃计划：`docs/status/project-status.md`
+   - 已完成阶段与历史 checkpoint：`docs/plan/history.md`
 3. 只更新本轮实际触达的文档职责，不要把 design、plan、status 混写到一个文件里。
 
 ## 治理基线
@@ -14,9 +14,8 @@
 - 仓库级治理规则以 `AGENTS.md` 与 `docs/index.md` 为准。
 - `.codex/`、`.claude/` 等本地工具目录只作本地使用，统一通过 `.gitignore` 忽略，不纳入版本管理。
 - `README.md` 只负责项目总览、本地命令和入口导航，不记录实时执行状态。
-- `docs/codex-kickoff-brief.md` 是实现会话的快速背景，不替代 PRD。
 - `docs/design/product-requirements.md`、`docs/design/future-data-model.md`、`docs/design/v0.1-validation-lab.md`、`docs/design/search-and-recall-evolution.md`、`docs/design/v0.2-v0.3-product-blueprint.md` 负责长期边界、验证设计、取舍与后续扩展方向。
-- `docs/plan/implementation-plan.md` 与未来的 `docs/plan/*.md` 负责可执行任务拆分、完成定义与验证要求。
+- `docs/plan/*.md` 负责活跃阶段的可执行任务拆分、完成定义与验证要求；`docs/plan/history.md` 负责已完成或废弃计划的归档。
 - `docs/status/project-status.md` 是当前进度、风险、阻塞和下一步的唯一权威状态页。
 - `docs/status/code-review-status.md` 负责沉淀 code review findings 与跟进状态。
 

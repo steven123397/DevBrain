@@ -14,9 +14,10 @@ test("dashboard and notes list render seeded data", async ({ page }) => {
 
   await expect(page).toHaveURL(/\/notes/);
   await expect(page.getByRole("searchbox", { name: "搜索条目" })).toBeVisible();
-  await expect(page.getByText("3 条结果")).toBeVisible();
+  await expect(page.getByText("5 条结果")).toBeVisible();
   await expect(page.getByText("pnpm peer dep fix")).toBeVisible();
   await expect(page.getByText("next.js hydration guard")).toBeVisible();
+  await expect(page.getByText("validation db target safety")).toBeVisible();
 });
 
 test("quick capture creates an inbox note and lands on the detail page", async ({

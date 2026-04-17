@@ -11,7 +11,7 @@
 - 相关状态：
   - [project-status.md](project-status.md)
 - 当前计划：
-  - [../plan/implementation-plan.md](../plan/implementation-plan.md)
+  - 无（新增阶段任务时写入 `../plan/*.md`）
 - 已完成计划归档：
   - [../plan/history.md](../plan/history.md)
 

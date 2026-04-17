@@ -98,16 +98,15 @@ pnpm build
 
 - 文档总索引：`docs/index.md`
 - 项目规则：`AGENTS.md`
-- 快速背景：`docs/codex-kickoff-brief.md`
 - 产品边界：`docs/design/product-requirements.md`
 - 下一阶段设计：`docs/design/v0.1-validation-lab.md`、`docs/design/search-and-recall-evolution.md`、`docs/design/v0.2-v0.3-product-blueprint.md`
-- 当前执行计划：`docs/plan/implementation-plan.md`
+- 阶段计划与归档：活跃任务写入 `docs/plan/*.md`，已完成阶段见 `docs/plan/history.md`
 - 当前状态：`docs/status/project-status.md`
 
 ## 工作流约定
 
 1. 先从 `docs/index.md` 判断本轮任务对应的 design / plan / status 文档。
 2. 产品边界变化写入 `docs/design/product-requirements.md` 或 `docs/design/future-data-model.md`。
-3. 可执行拆解写入 `docs/plan/implementation-plan.md` 或 `docs/plan/*.md`。
+3. 可执行拆解写入 `docs/plan/*.md`，完成后归档到 `docs/plan/history.md`。
 4. 实时进度、风险和下一步只写入 `docs/status/*.md`，不要重复写进计划文档。
 5. 提交（commit）不是默认动作，只有用户明确要求时才执行。

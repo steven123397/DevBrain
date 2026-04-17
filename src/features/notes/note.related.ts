@@ -1,3 +1,9 @@
+import {
+  analyzeSearchText,
+  describeCanonicalTerms,
+  normalizeStackName,
+  normalizeTagName,
+} from "./note.normalization";
 import type { KnowledgeNote } from "./note.types";
 
 export interface RelatedNoteRecommendation {
@@ -13,17 +19,28 @@ interface RelatedScore {
 
 const titleStopWords = new Set([
   "after",
+  "action",
   "before",
+  "component",
+  "database",
+  "db",
+  "default",
+  "demo",
+  "file",
+  "files",
   "from",
   "into",
   "with",
   "without",
   "guide",
   "issue",
+  "main",
   "note",
   "notes",
   "problem",
+  "server",
   "solution",
+  "validation",
 ]);
 
 function uniqueIntersection(left: string[], right: string[]) {
@@ -36,9 +53,9 @@ function formatReason(label: string, values: string[]) {
 }
 
 function tokenizeTitle(value: string) {
-  const matches = value.toLowerCase().match(/[a-z0-9][a-z0-9.+#/-]*/g) ?? [];
+  const analysis = analyzeSearchText(value);
 
-  return matches.filter(
+  return analysis.tokens.filter(
     (token) => token.length >= 3 && !titleStopWords.has(token),
   );
 }
@@ -48,8 +65,34 @@ function tokenizeCommands(value: string | null) {
     return [];
   }
 
-  const matches = value.toLowerCase().match(/[a-z0-9][a-z0-9.+#/-]*/g) ?? [];
-  return matches.filter((token) => token.length >= 2);
+  const analysis = analyzeSearchText(value);
+
+  return analysis.structuredTokens.filter(
+    (token) =>
+      token.length >= 3 &&
+      !token.includes("/") &&
+      !token.endsWith(".sqlite") &&
+      !token.endsWith(".ts"),
+  );
+}
+
+function collectCanonicalTerms(note: KnowledgeNote) {
+  const combined = [
+    note.title,
+    note.rawInput,
+    note.summary,
+    note.problem,
+    note.solution,
+    note.why,
+    note.commands,
+    note.references,
+    note.stack,
+    note.tags.join(" "),
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  return analyzeSearchText(combined).canonicalKeys;
 }
 
 export function scoreRelated(
@@ -66,21 +109,35 @@ export function scoreRelated(
   const reasons: string[] = [];
   let score = 0;
 
-  const sharedTags = uniqueIntersection(base.tags, candidate.tags).map(
+  const sharedTags = uniqueIntersection(
+    base.tags.map(normalizeTagName),
+    candidate.tags.map(normalizeTagName),
+  ).map(
     (tag) => `#${tag}`,
   );
   if (sharedTags.length > 0) {
-    score += sharedTags.length * 3;
+    score += sharedTags.length * 4;
     reasons.push(formatReason("共享标签", sharedTags));
   }
 
   if (
     base.stack &&
     candidate.stack &&
-    base.stack.toLowerCase() === candidate.stack.toLowerCase()
+    normalizeStackName(base.stack) === normalizeStackName(candidate.stack)
   ) {
-    score += 2;
-    reasons.push(`同技术栈：${candidate.stack}`);
+    score += 3;
+    reasons.push(`同技术栈：${normalizeStackName(candidate.stack)}`);
+  }
+
+  const sharedCanonicalTerms = uniqueIntersection(
+    collectCanonicalTerms(base),
+    collectCanonicalTerms(candidate),
+  );
+  if (sharedCanonicalTerms.length > 0) {
+    score += sharedCanonicalTerms.length * 4;
+    reasons.push(
+      formatReason("共享术语", describeCanonicalTerms(sharedCanonicalTerms)),
+    );
   }
 
   const sharedTitleTokens = uniqueIntersection(
@@ -97,7 +154,7 @@ export function scoreRelated(
     tokenizeCommands(candidate.commands),
   );
   if (sharedCommandTokens.length > 0) {
-    score += sharedCommandTokens.length;
+    score += sharedCommandTokens.length * 2;
     reasons.push(formatReason("命令词重叠", sharedCommandTokens));
   }
 

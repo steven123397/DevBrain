@@ -372,47 +372,254 @@ describe("note service", () => {
     }
   });
 
+  it("supports Chinese fuzzy recall and canonical alias expansion in search", async () => {
+    const context = createTestContext();
+
+    try {
+      await context.service.createNote({
+        title: "输入框改了但列表没变",
+        rawInput: "中文查询更新后，列表结果还是旧的",
+        summary: "列表筛选依赖的 query 没同步更新。",
+        problem: "输入框改了，但真正参与过滤的状态没有更新。",
+        solution: "统一 query 状态来源，让列表和输入框读写同一个值。",
+        status: "digested",
+        tags: ["search"],
+      });
+      await context.service.createNote({
+        title: "drizzle-orm migration checklist",
+        rawInput: "Keep drizzle orm and drizzle-kit scripts aligned.",
+        summary: "Align drizzle-orm package usage with local scripts.",
+        problem: "drizzle orm docs and local commands diverged.",
+        solution: "Use drizzle-kit generate before db:migrate.",
+        status: "digested",
+        tags: ["database"],
+        stack: "Drizzle ORM",
+      });
+      await context.service.createNote({
+        title: "validation db target safety",
+        rawInput: "避免 seed 或迁移落到默认主库。",
+        summary: "数据库操作必须显式指向 validation db。",
+        problem: "默认主库和 validation 库容易混淆。",
+        solution: "统一通过 DEVBRAIN_DB_FILE 指向 validation db。",
+        why: "这样 seed 和 db:migrate 都不会误写到 demo db 或默认主库。",
+        commands: "DEVBRAIN_DB_FILE=data/validation.sqlite pnpm db:migrate",
+        references: "validation db / demo db / 默认主库",
+        status: "digested",
+        confidence: "trusted",
+        tags: ["database", "sqlite"],
+        stack: "SQLite",
+      });
+
+      await expect(
+        context.service.listNotes({ query: "输入框改了列表没变" }),
+      ).resolves.toHaveLength(1);
+      await expect(context.service.listNotes({ query: "drizzle orm" })).resolves.toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            title: "drizzle-orm migration checklist",
+          }),
+        ]),
+      );
+      await expect(context.service.listNotes({ query: "默认主库" })).resolves.toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            title: "validation db target safety",
+          }),
+        ]),
+      );
+    } finally {
+      context.sqlite.close();
+    }
+  });
+
+  it("ranks database target notes ahead of generic tooling matches", async () => {
+    const context = createTestContext();
+
+    try {
+      await context.service.createNote({
+        title: "validation db target safety",
+        rawInput: "Keep seed and migrate on the validation db.",
+        summary: "Database operations should never fall back to the 默认主库.",
+        problem: "db:migrate and seed can accidentally point at the wrong database.",
+        solution: "Always export DEVBRAIN_DB_FILE before db:migrate.",
+        why: "The validation 库 path is the real guardrail for review flows.",
+        commands: "DEVBRAIN_DB_FILE=data/validation.sqlite pnpm db:migrate",
+        references: "validation db / demo db / 默认主库",
+        status: "digested",
+        confidence: "trusted",
+        tags: ["database", "sqlite"],
+        stack: "SQLite",
+      });
+      await context.service.createNote({
+        title: "better-sqlite3 bindings rebuild",
+        rawInput: "Rebuild native bindings after reinstall.",
+        summary: "Native bindings can break after a fresh install.",
+        problem: "The better-sqlite3 module fails to load.",
+        solution: "Rebuild the package and re-run install scripts.",
+        why: "This is a local toolchain fix, not a database target decision.",
+        commands: "pnpm rebuild better-sqlite3",
+        references: "better-sqlite3 bindings",
+        status: "digested",
+        confidence: "tested",
+        tags: ["sqlite"],
+        stack: "SQLite",
+      });
+
+      const migrateResults = await context.service.listNotes({ query: "db:migrate" });
+      const validationResults = await context.service.listNotes({ query: "validation 库" });
+
+      expect(migrateResults[0]?.title).toBe("validation db target safety");
+      expect(validationResults[0]?.title).toBe("validation db target safety");
+    } finally {
+      context.sqlite.close();
+    }
+  });
+
+  it("does not let plain file notes leak into DEVBRAIN_DB_FILE results", async () => {
+    const context = createTestContext();
+
+    try {
+      await context.service.createNote({
+        title: "validation db target safety",
+        rawInput: "Keep seed and migrate on the validation db.",
+        summary: "Database operations should never fall back to the 默认主库.",
+        problem: "DEVBRAIN_DB_FILE must point at the right SQLite file.",
+        solution: "Export DEVBRAIN_DB_FILE before seed or db:migrate.",
+        why: "The env var is the real guardrail for review flows.",
+        commands: "DEVBRAIN_DB_FILE=data/validation.sqlite pnpm db:migrate",
+        references: "validation db / demo db / 默认主库",
+        status: "digested",
+        confidence: "trusted",
+        tags: ["database", "sqlite"],
+        stack: "SQLite",
+      });
+      await context.service.createNote({
+        title: "server file wiring guide",
+        rawInput: "Keep the file layout readable on the server side.",
+        summary: "A generic file organization note.",
+        problem: "Server files were hard to scan.",
+        solution: "Rename and regroup files by feature.",
+        status: "digested",
+        confidence: "tested",
+        tags: ["frontend"],
+        stack: "Next.js",
+      });
+
+      const results = await context.service.listNotes({ query: "DEVBRAIN_DB_FILE" });
+
+      expect(results.map((note) => note.title)).toEqual([
+        "validation db target safety",
+      ]);
+    } finally {
+      context.sqlite.close();
+    }
+  });
+
+  it("keeps broad pnpm queries focused on pnpm-centric notes before command-only matches", async () => {
+    const context = createTestContext();
+
+    try {
+      await context.service.createNote({
+        title: "pnpm workspace overrides checklist",
+        rawInput: "Remember the workspace override smoke test.",
+        summary: "Use pnpm overrides to keep workspace installs aligned.",
+        problem: "Workspace packages drift to incompatible peer ranges.",
+        solution: "Pin shared versions with pnpm overrides and reinstall.",
+        commands: "pnpm install",
+        status: "digested",
+        confidence: "tested",
+        tags: ["pnpm", "workspace"],
+        stack: "Tooling",
+      });
+      await context.service.createNote({
+        title: "pnpm peer dep fix",
+        rawInput: "Used overrides for workspace alignment.",
+        status: "inbox",
+        tags: ["pnpm"],
+        stack: "Tooling",
+      });
+      await context.service.createNote({
+        title: "better-sqlite3 bindings rebuild",
+        rawInput: "Native bindings can fail after a fresh install.",
+        summary: "Rebuild the better-sqlite3 package after reinstalling dependencies.",
+        problem: "The module fails to load because the native binding is stale.",
+        solution: "Run pnpm rebuild better-sqlite3 and reinstall if needed.",
+        commands: "pnpm rebuild better-sqlite3",
+        why: "This is a toolchain fix, not a pnpm note.",
+        status: "digested",
+        confidence: "tested",
+        tags: ["sqlite", "tooling"],
+        stack: "SQLite",
+      });
+      await context.service.createNote({
+        title: "validation db target safety",
+        rawInput: "Avoid seed or migrate falling back to 默认主库.",
+        summary: "Database review should always stay on validation db.",
+        problem: "The demo db and 默认主库 are easy to confuse during review.",
+        solution: "Set DEVBRAIN_DB_FILE before seed or migration commands.",
+        why: "This keeps local database operations on the validation db until review is done.",
+        commands: "DEVBRAIN_DB_FILE=data/validation.sqlite pnpm seed",
+        status: "digested",
+        confidence: "trusted",
+        tags: ["database", "sqlite"],
+        stack: "SQLite",
+      });
+
+      const results = await context.service.listNotes({ query: "pnpm" });
+
+      expect(results.slice(0, 2).map((note) => note.title)).toEqual([
+        "pnpm workspace overrides checklist",
+        "pnpm peer dep fix",
+      ]);
+    } finally {
+      context.sqlite.close();
+    }
+  });
+
   it("returns explainable related notes ordered by score", async () => {
     const context = createTestContext();
 
     try {
       const base = await context.service.createNote({
-        title: "pnpm workspace alignment",
-        summary: "Keep workspace dependency versions aligned.",
-        problem: "Peer dependency ranges drift across workspace packages.",
-        solution: "Pin shared versions at the workspace root.",
-        tags: ["pnpm", "workspace"],
-        stack: "Tooling",
-        commands: "pnpm install --recursive",
+        title: "validation db seed flow",
+        summary: "Seed should stay on the validation db.",
+        problem: "pnpm seed can accidentally touch the 默认主库.",
+        solution: "Point seed at the validation db before reviewing data changes.",
+        why: "DEVBRAIN_DB_FILE keeps local review data isolated.",
+        tags: ["database", "sqlite"],
+        stack: "SQLite",
+        commands: "DEVBRAIN_DB_FILE=data/validation.sqlite pnpm seed",
         status: "digested",
       });
       await context.service.createNote({
-        title: "docker cache cleanup",
-        summary: "Remove stale Docker build layers.",
-        problem: "Local builds accumulate too much cached data.",
-        solution: "Prune old build cache before rebuilding images.",
-        tags: ["docker"],
-        stack: "Docker",
-        commands: "docker builder prune",
+        title: "server file wiring guide",
+        summary: "Keep generic server-side file wiring tidy.",
+        problem: "Loose server files become hard to follow.",
+        solution: "Refactor file boundaries and naming.",
+        tags: ["frontend"],
+        stack: "Next.js",
+        commands: "pnpm lint",
         status: "digested",
       });
       const stronger = await context.service.createNote({
-        title: "pnpm workspace install guide",
-        summary: "Install workspace dependencies deterministically.",
-        problem: "Workspace installs drift when shared versions are inconsistent.",
-        solution: "Reinstall after aligning shared versions and lockfiles.",
-        tags: ["pnpm", "workspace"],
-        stack: "Tooling",
-        commands: "pnpm install",
+        title: "db:migrate target validation db",
+        summary: "Keep migrations on the validation db before touching real data.",
+        problem: "db:migrate can point at the wrong database file.",
+        solution: "Export DEVBRAIN_DB_FILE before db:migrate.",
+        why: "The validation db should absorb migrate checks first.",
+        tags: ["database", "sqlite"],
+        stack: "SQLite",
+        commands: "DEVBRAIN_DB_FILE=data/validation.sqlite pnpm db:migrate",
         status: "digested",
       });
       const weaker = await context.service.createNote({
-        title: "workspace peer dependency checklist",
-        summary: "Checklist for reviewing workspace peer dependency drift.",
-        problem: "Peer dependency mismatches are easy to miss across packages.",
-        solution: "Review the checklist before publishing or reinstalling.",
-        tags: ["workspace"],
-        commands: "pnpm list",
+        title: "better-sqlite3 bindings rebuild",
+        summary: "Rebuild better-sqlite3 after reinstalling dependencies.",
+        problem: "Fresh installs can break the native bindings.",
+        solution: "Rebuild the package before retrying the app.",
+        tags: ["sqlite"],
+        stack: "SQLite",
+        commands: "pnpm rebuild better-sqlite3",
         status: "digested",
       });
 
@@ -421,8 +628,8 @@ describe("note service", () => {
       expect(related.map((item) => item.note.id)).toEqual([stronger.id, weaker.id]);
       expect(related[0]?.reasons).toEqual(
         expect.arrayContaining([
-          "共享标签：#pnpm、#workspace",
-          "同技术栈：Tooling",
+          "共享标签：#database、#sqlite",
+          "同技术栈：SQLite",
         ]),
       );
     } finally {

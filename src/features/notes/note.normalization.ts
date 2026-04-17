@@ -36,12 +36,137 @@ const stackAliases: Record<string, string> = {
   typescript: "TypeScript",
 };
 
+interface CanonicalTermDefinition {
+  key: string;
+  label: string;
+  aliases: string[];
+}
+
+export interface SearchTextAnalysis {
+  normalized: string;
+  loose: string;
+  phraseVariants: string[];
+  tokens: string[];
+  structuredTokens: string[];
+  canonicalKeys: string[];
+}
+
+const canonicalTermDefinitions: CanonicalTermDefinition[] = [
+  {
+    key: "drizzle-orm",
+    label: "drizzle-orm",
+    aliases: ["drizzle orm", "drizzle-orm"],
+  },
+  {
+    key: "drizzle-kit",
+    label: "drizzle-kit",
+    aliases: ["drizzle kit", "drizzle-kit"],
+  },
+  {
+    key: "db-migrate",
+    label: "db:migrate",
+    aliases: ["db migrate", "db:migrate", "migrate", "migration", "migrations"],
+  },
+  {
+    key: "db-seed",
+    label: "seed",
+    aliases: ["seed", "seed data", "demo seed", "pnpm seed"],
+  },
+  {
+    key: "better-sqlite3",
+    label: "better-sqlite3",
+    aliases: ["better sqlite3", "better-sqlite3", "bindings"],
+  },
+  {
+    key: "database-target",
+    label: "数据库目标",
+    aliases: [
+      "validation db",
+      "validation 库",
+      "demo db",
+      "默认主库",
+      "主库",
+      "default db",
+      "default main db",
+      "main db",
+      "database file",
+      "db file",
+      "DEVBRAIN_DB_FILE",
+    ],
+  },
+  {
+    key: "server-action",
+    label: "server action",
+    aliases: ["server action", "server actions"],
+  },
+  {
+    key: "server-component",
+    label: "server component",
+    aliases: ["server component", "server components"],
+  },
+  {
+    key: "hydration-mismatch",
+    label: "hydration mismatch",
+    aliases: ["hydration mismatch"],
+  },
+];
+
 function collapseWhitespace(value: string) {
   return value.trim().replace(/\s+/g, " ");
 }
 
 function normalizeLookupValue(value: string) {
   return collapseWhitespace(value).toLowerCase();
+}
+
+function normalizeLooseLookupValue(value: string) {
+  return collapseWhitespace(value)
+    .replace(/[_:/.-]+/g, " ")
+    .toLowerCase()
+    .replace(/\s+/g, " ");
+}
+
+function uniqueValues(values: string[]) {
+  return Array.from(new Set(values.filter(Boolean)));
+}
+
+function extractAsciiTokens(value: string) {
+  return value.match(/[a-z0-9][a-z0-9.+#/_:-]*/g) ?? [];
+}
+
+function buildChineseFragments(value: string) {
+  const fragments: string[] = [];
+  const runs = value.match(/[\u4e00-\u9fff]{2,}/g) ?? [];
+
+  for (const run of runs) {
+    fragments.push(run);
+
+    if (run.length <= 2) {
+      continue;
+    }
+
+    for (let size = 2; size <= Math.min(3, run.length); size += 1) {
+      for (let index = 0; index <= run.length - size; index += 1) {
+        fragments.push(run.slice(index, index + size));
+      }
+    }
+  }
+
+  return uniqueValues(fragments);
+}
+
+function matchesAlias(
+  normalizedValue: string,
+  looseValue: string,
+  alias: string,
+) {
+  const normalizedAlias = normalizeLookupValue(alias);
+  const looseAlias = normalizeLooseLookupValue(alias);
+
+  return (
+    (normalizedAlias.length > 0 && normalizedValue.includes(normalizedAlias)) ||
+    (looseAlias.length > 0 && looseValue.includes(looseAlias))
+  );
 }
 
 export function normalizeTagName(value: string) {
@@ -64,4 +189,46 @@ export function normalizeStackName(value: string) {
 
 export function normalizeSearchText(value: string) {
   return collapseWhitespace(value).toLowerCase();
+}
+
+export function analyzeSearchText(value: string): SearchTextAnalysis {
+  const normalized = normalizeSearchText(value);
+  const loose = normalizeLooseLookupValue(value);
+  const exactTokens = extractAsciiTokens(normalized);
+  const looseTokens = extractAsciiTokens(loose);
+  const chineseFragments = buildChineseFragments(normalized);
+  const canonicalDefinitions = canonicalTermDefinitions.filter((definition) =>
+    definition.aliases.some((alias) => matchesAlias(normalized, loose, alias)),
+  );
+  const phraseVariants = uniqueValues([
+    normalized,
+    ...canonicalDefinitions.flatMap((definition) =>
+      definition.aliases.map((alias) => normalizeSearchText(alias)),
+    ),
+  ]);
+  const tokens = uniqueValues([
+    ...exactTokens,
+    ...looseTokens,
+    ...chineseFragments,
+  ]);
+  const structuredTokens = uniqueValues(
+    exactTokens.filter((token) => /[_:/.-]/.test(token)),
+  );
+
+  return {
+    normalized,
+    loose,
+    phraseVariants,
+    tokens,
+    structuredTokens,
+    canonicalKeys: canonicalDefinitions.map((definition) => definition.key),
+  };
+}
+
+export function describeCanonicalTerms(keys: string[]) {
+  const labelMap = new Map(
+    canonicalTermDefinitions.map((definition) => [definition.key, definition.label]),
+  );
+
+  return uniqueValues(keys.map((key) => labelMap.get(key) ?? key)).sort();
 }

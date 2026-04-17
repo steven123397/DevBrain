@@ -20,3 +20,15 @@ test("search filters persist in the url and narrow the list", async ({ page }) =
   await expect(page.getByText("pnpm peer dep fix")).not.toBeVisible();
   await expect(page.getByLabel("搜索条目")).toHaveValue("hydration");
 });
+
+test("search recalls the database safety note for 中文边界词", async ({ page }) => {
+  resetSeededDatabase();
+  await page.goto("/notes?q=%E9%BB%98%E8%AE%A4%E4%B8%BB%E5%BA%93");
+
+  await expect(page.getByLabel("搜索条目")).toHaveValue("默认主库");
+  await expect(page.getByText("validation db target safety")).toBeVisible();
+  await expect(page.getByRole("link", { name: /打开 / }).first()).toHaveAttribute(
+    "aria-label",
+    "打开 validation db target safety",
+  );
+});
