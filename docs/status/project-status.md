@@ -67,6 +67,7 @@
 - 已完成相关推荐去噪：`src/features/notes/note.related.ts` 已整合 canonical signal、结构化命令 token 与标题泛词降权，数据库 seed / migrate / bindings 链路更稳定，`server` / `file` 类噪声不再轻易抬高无关条目。
 - 已补齐 R1~R3 回归验证：新增 `tests/unit/note-normalization.test.ts`，并扩展 `tests/unit/note-search.test.ts`、`tests/unit/note-related.test.ts`、`tests/unit/note-service.test.ts` 覆盖中文模糊查询、数据库边界词、alias 归一、数据库排序权重与相关推荐链路。
 - 已补最小浏览器级回归：`src/db/demo-seed.ts` 新增数据库安全边界样本，`tests/e2e/search-notes.spec.ts` 与 `tests/e2e/related-notes.spec.ts` 现覆盖 `/notes?q=默认主库` 命中目标卡片，以及数据库详情页优先带出 `db:migrate` 相邻条目。
+- 已完成测试基线收口：`tests/unit/smoke.test.tsx` 现通过 mock `noteService.getDashboardOverview` 渲染首页知识闭环，不再依赖真实 SQLite schema；`playwright.config.ts` 的 `webServer.command` 已切到 `corepack pnpm`，服务器侧可直接跑 E2E。
 - 已完成更大样本的本地搜索 / related 评估：基于内存 SQLite 构造 28 条混合样本复核 `默认主库`、`validation 库`、`DEVBRAIN_DB_FILE`、`db:migrate`、`drizzle orm`、`输入框改了列表没变`、`hydration`、`pnpm` 等查询后，当前结论是搜索主路径仍可解释且可用，暂不需要引入 SQLite FTS。
 
 ## 进行中
@@ -122,3 +123,4 @@
 - 2026-04-17：最小浏览器级回归已补齐；先通过 `pnpm test:e2e -- tests/e2e/search-notes.spec.ts tests/e2e/related-notes.spec.ts` 完成红绿循环，再通过 `pnpm lint` 与 `pnpm test:e2e` 验证扩展后的 demo seed 未破坏现有 seeded 浏览器用例。
 - 2026-04-17：已通过一次性本地评估脚本在内存 SQLite 上构造 28 条混合样本，复核搜索与相关推荐在更大样本下的命中与排序；查询 `默认主库`、`validation 库`、`DEVBRAIN_DB_FILE`、`db:migrate`、`drizzle orm`、`输入框改了列表没变`、`hydration`、`pnpm` 后，当前判断仍以规则层增强优先，暂不进入 SQLite FTS。
 - 2026-04-17：已完成一轮搜索规则层小修；先通过 `pnpm test -- tests/unit/note-search.test.ts tests/unit/note-service.test.ts` 固化 `DEVBRAIN_DB_FILE` 尾部噪声与 `pnpm` 排序回归，再通过 `pnpm test:e2e -- tests/e2e/search-notes.spec.ts` 与 `pnpm lint` 验证搜索主路径未回退。
+- 2026-04-17：已完成测试基线修复；`tests/unit/smoke.test.tsx` 现通过 mock dashboard service 脱离真实 SQLite schema，`playwright.config.ts` 的 webServer 已切到 `corepack pnpm`，并已在服务器上通过 `corepack pnpm lint`、`corepack pnpm test`、`corepack pnpm build`、`corepack pnpm test:e2e`。

@@ -11,7 +11,7 @@ export default defineConfig({
   },
   webServer: {
     command:
-      "pnpm exec tsx tests/e2e/seed-dashboard.ts && pnpm build && pnpm exec next start --hostname 127.0.0.1 --port 3000",
+      "corepack pnpm exec tsx tests/e2e/seed-dashboard.ts && corepack pnpm build && corepack pnpm exec next start --hostname 127.0.0.1 --port 3000",
     env: {
       DEVBRAIN_DB_FILE: "data/e2e-dashboard.sqlite",
     },

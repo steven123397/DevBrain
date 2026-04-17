@@ -1,6 +1,10 @@
+import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
-import { vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+
+const mocks = vi.hoisted(() => ({
+  getDashboardOverview: vi.fn(),
+}));
 
 vi.mock("next/font/google", () => ({
   Geist: () => ({ variable: "font-geist-sans" }),
@@ -11,8 +15,29 @@ vi.mock("next/image", () => ({
   default: () => null,
 }));
 
+vi.mock("next/link", () => ({
+  default: ({
+    href,
+    children,
+    ...props
+  }: {
+    href: string;
+    children: React.ReactNode;
+  }) => createElement("a", { href, ...props }, children),
+}));
+
+vi.mock("@/features/notes/note.service", () => ({
+  noteService: {
+    getDashboardOverview: mocks.getDashboardOverview,
+  },
+}));
+
 import { metadata } from "../../src/app/layout";
 import Home from "../../src/app/page";
+
+afterEach(() => {
+  vi.clearAllMocks();
+});
 
 describe("app bootstrap", () => {
   it("publishes DevBrain metadata", () => {
@@ -21,6 +46,13 @@ describe("app bootstrap", () => {
   });
 
   it("renders the knowledge loop on the homepage", async () => {
+    mocks.getDashboardOverview.mockResolvedValue({
+      totalNotes: 0,
+      inboxCount: 0,
+      digestedCount: 0,
+      recentNotes: [],
+    });
+
     const html = renderToStaticMarkup(await Home());
 
     expect(html).toContain("DevBrain");
