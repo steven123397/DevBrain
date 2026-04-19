@@ -5,6 +5,7 @@ import {
   createUpdateNoteFormValues,
 } from "@/app/actions/update-note.shared";
 import { NoteEditorForm } from "@/components/note-editor-form";
+import { readRuntimeAIConfig } from "@/features/ai/ai.config";
 import { noteService } from "@/features/notes/note.service";
 
 export const dynamic = "force-dynamic";
@@ -16,6 +17,7 @@ export default async function EditNotePage({
 }) {
   const { id } = await params;
   const note = await noteService.getNoteById(id);
+  const aiEnabled = readRuntimeAIConfig().enabled;
 
   if (!note) {
     notFound();
@@ -59,7 +61,10 @@ export default async function EditNotePage({
         </header>
 
         <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-          <NoteEditorForm initialValues={createUpdateNoteFormValues(note)} />
+          <NoteEditorForm
+            initialValues={createUpdateNoteFormValues(note)}
+            aiEnabled={aiEnabled}
+          />
 
           <aside className="rounded-[2rem] border border-slate-900/10 bg-slate-950 p-7 text-stone-100 shadow-[0_24px_80px_rgba(15,23,42,0.14)]">
             <p className="text-xs uppercase tracking-[0.3em] text-stone-400">

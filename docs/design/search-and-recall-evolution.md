@@ -1,11 +1,11 @@
 # DevBrain 搜索与召回演进设计
 
 文档状态：draft
-最后更新：2026-04-15
+最后更新：2026-04-19
 负责人：Hermes
 关联需求：`docs/design/product-requirements.md`
-关联计划：无（待用户拍板后再新增对应 `docs/plan/*.md`）
-关联状态：无（待下一阶段正式启动后再接入 `docs/status/project-status.md`）
+关联计划：`docs/plan/v0.2-ai-assist-layer.md`（主要影响 Phase D 的进入判定）
+关联状态：`docs/status/project-status.md`
 
 ## 1. 背景
 
@@ -201,11 +201,11 @@
 ## 11. 回写要求
 
 当前阶段：
-- 不默认创建实现计划。
-- 不把本设计自动写入当前状态页焦点。
-- 不把本设计的演进层级视为必须按顺序落地的承诺。
+- 本设计作为 v0.2 的边界参考继续生效，但不单独替代实现计划。
+- 当前默认仍停留在层 1 规则增强基线；只有当 `docs/plan/v0.2-ai-assist-layer.md` 的 Phase B / D 验证触发时，才进入更高层升级设计。
+- 当前正在推进的阶段与风险统一回写到 `docs/status/project-status.md`。
 
-若后续用户明确启动：
+若后续需要单独启动搜索 / 召回升级：
 - 在 `docs/plan/` 中新增对应搜索 / 召回升级计划文档。
 - 在 `docs/status/project-status.md` 中记录当前正在验证或推进的是哪一层演进。
 - 若升级策略影响 v0.2 设计边界，再同步回写 `docs/design/v0.2-v0.3-product-blueprint.md`。

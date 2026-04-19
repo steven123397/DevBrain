@@ -228,6 +228,31 @@ export function createNoteService(database: typeof db = db) {
     return mapNoteRecord(record, noteTagMap);
   }
 
+  async function listNotesByIds(noteIds: string[]) {
+    const uniqueNoteIds = Array.from(new Set(noteIds.filter(Boolean)));
+    if (uniqueNoteIds.length === 0) {
+      return [];
+    }
+
+    const records = database
+      .select()
+      .from(notes)
+      .where(inArray(notes.id, uniqueNoteIds))
+      .all();
+
+    const noteTagMap = await getNoteTags(records.map((record) => record.id));
+    const noteMap = new Map(
+      records
+        .map((record) => mapNoteRecord(record, noteTagMap))
+        .map((note) => [note.id, note] as const),
+    );
+
+    return uniqueNoteIds.flatMap((noteId) => {
+      const note = noteMap.get(noteId);
+      return note ? [note] : [];
+    });
+  }
+
   async function listNotes(input: NoteFiltersInput = {}) {
     const filters = noteFiltersSchema.parse(input);
     const conditions = [];
@@ -431,6 +456,7 @@ export function createNoteService(database: typeof db = db) {
   return {
     createNote,
     getNoteById,
+    listNotesByIds,
     listNotes,
     listRelatedNotes,
     listFilterOptions,

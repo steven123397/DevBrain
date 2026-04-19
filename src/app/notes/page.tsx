@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { FilterBar } from "@/components/filter-bar";
 import { NoteList } from "@/components/note-list";
+import { readRuntimeAIConfig } from "@/features/ai/ai.config";
 import { noteFiltersSchema } from "@/features/notes/note.schemas";
 import { noteService } from "@/features/notes/note.service";
 
@@ -103,6 +104,8 @@ export default async function NotesPage({
   });
   const showDeletedNotice = takeFirstValue(resolvedSearchParams.deleted) === "1";
   const emptyState = resolveEmptyState(filters);
+  const aiConfig = readRuntimeAIConfig();
+  const aiEnabled = aiConfig.enabled;
 
   const [filterOptions, notes] = await Promise.all([
     noteService.listFilterOptions(),
@@ -167,6 +170,9 @@ export default async function NotesPage({
           notes={notes}
           emptyTitle={emptyState.title}
           emptyDescription={emptyState.description}
+          aiEnabled={aiEnabled}
+          enableCompressedSummaries={aiEnabled}
+          compressBatchSize={aiConfig.compressBatchSize}
         />
       </div>
     </main>

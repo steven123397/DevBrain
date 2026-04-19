@@ -1,7 +1,7 @@
 # DevBrain 文档索引
 
 文档状态：active
-最后更新：2026-04-17
+最后更新：2026-04-19
 适用范围：仓库级文档导航、治理映射与执行工作流
 
 ## 1. 推荐阅读顺序
@@ -61,7 +61,7 @@
 
 ## 4. 当前活跃文档
 
-- 活跃计划：无（进入下一阶段时再新增 `docs/plan/*.md`）
+- 活跃计划：`docs/plan/v0.2-ai-assist-layer.md`
 - 计划归档：`docs/plan/history.md`
 - 当前状态：`docs/status/project-status.md`
 - Review 跟踪：`docs/status/code-review-status.md`

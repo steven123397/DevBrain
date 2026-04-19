@@ -2,7 +2,7 @@
 
 DevBrain 是一个面向程序员的本地优先知识库，用来把开发中的碎片知识沉淀为可检索、可关联、可复用的知识资产。
 
-当前仓库处于 MVP / v0.1 启动阶段，优先跑通 4 个动作：收集、整理、搜索、复用。
+当前仓库已完成 v0.1 MVP 主闭环与搜索 / 相关推荐质量升级，现已正式进入 v0.2 AI Assist Layer 阶段；主流程仍围绕 4 个动作：收集、整理、搜索、复用。
 
 ## MVP 范围
 
@@ -77,6 +77,37 @@ pnpm build
 ```
 
 建议在交付或 review 前至少执行一次完整基线：`pnpm lint && pnpm test && pnpm build && pnpm test:e2e`
+
+## AI 配置
+
+v0.2 当前默认使用阿里云百炼的 Anthropic 兼容接口。未配置 API key 时，AI 入口应自动降级，不影响主流程。
+
+常用环境变量：
+
+```bash
+DEVBRAIN_AI_API_KEY=your_dashscope_api_key
+DEVBRAIN_AI_PROVIDER=dashscope
+DEVBRAIN_AI_BASE_URL=https://dashscope.aliyuncs.com/apps/anthropic
+DEVBRAIN_AI_MODEL=qwen3.6-plus
+DEVBRAIN_AI_EXTRACT_MAX_TOKENS=700
+DEVBRAIN_AI_SUGGEST_MAX_TOKENS=300
+DEVBRAIN_AI_COMPRESS_MAX_TOKENS=480
+DEVBRAIN_AI_COMPRESS_BATCH_SIZE=6
+```
+
+- `DEVBRAIN_AI_PROVIDER`：当前默认是 `dashscope`
+- `DEVBRAIN_AI_BASE_URL`：可按地域改成其他百炼 Anthropic 兼容入口
+- `DEVBRAIN_AI_MODEL`：默认 `qwen3.6-plus`，也可切到其他兼容模型
+- `DEVBRAIN_AI_EXTRACT_MAX_TOKENS`：编辑页结构化提取的输出预算，默认 `700`
+- `DEVBRAIN_AI_SUGGEST_MAX_TOKENS`：标签 / 技术栈建议的输出预算，默认 `300`
+- `DEVBRAIN_AI_COMPRESS_MAX_TOKENS`：列表页压缩提示的输出预算，默认 `480`
+- `DEVBRAIN_AI_COMPRESS_BATCH_SIZE`：列表页首次批量压缩窗口，默认 `6`
+
+当前默认 tuning 目标是：
+
+- 提取保留较高输出预算，避免结构字段被截断
+- 标签建议收紧输出预算，减少无关冗余
+- 压缩提示同时收紧输出预算和批量窗口，优先改善首访等待体感
 
 ## SQLite 本地依赖说明
 
