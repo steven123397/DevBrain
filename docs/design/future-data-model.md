@@ -1,505 +1,287 @@
-# DevBrain 未来数据模型草案
+# DevBrain 未来数据模型
 
 文档状态：future draft
-最后更新：2026-04-12
-适用范围：v0.3+ 以后对 Knowledge Network / Decision Trails / Contextual Recall / Second Brain Layer 的建模讨论
+最后更新：2026-04-23
+适用范围：v0.3+ 以后对知识对象、事件证据、情境召回与长期记忆演化的建模讨论
 
 ## 1. 这份文档解决什么问题
 
-`docs/design/product-requirements.md` 解决的是产品边界，阶段性 `docs/plan/*.md` 解决的是活跃任务的落地顺序，已完成阶段统一归档到 `docs/plan/history.md`。
+当 DevBrain 从知识卡片系统继续演化时，最容易犯的错误是把“向量”“图谱”“上下文绑定”“长期记忆”混成同一层。
 
-这份文档单独回答一个更长期的问题：
+这份文档的作用是把长期数据模型重新讲清楚：
 
-当 DevBrain 从“知识卡片系统”继续生长为“知识网 / 决策路径 / 情境召回系统”时，底层数据模型应该如何演进，才能：
-- 不推翻 v0.1 的 Note 主模型
-- 保持 local-first
-- 逐步支持实体、关系、上下文、决策和召回事件
-- 为未来 repo integration 和 capability map 留出空间
+- 程序员阶段的主资产到底是什么
+- 事件、知识、关系、情境、召回反馈分别处在什么层
+- v0.3 与 v0.4 应先把哪些实体变成一等对象
 
-注意：这不是当前 MVP 的交付要求，而是未来建模蓝图。
+注意：这不是当前迭代的实现任务，而是未来主线的建模约束。
 
-## 2. 设计原则
+## 2. 总体建模立场
 
-### 2.1 Note-first, graph-later
-先有稳定的知识卡片，再长出显式知识对象和关系网络。
+### 2.1 知识对象是主资产
 
-### 2.2 Structured memory before smart inference
-先把“记录了什么、验证了什么、在什么情境下有效”存清楚，再谈更高级的推断。
+对 DevBrain 当前面向的程序员用户来说，真正要被长期管理和复用的，不是“发生过的所有事件”，而是：
 
-### 2.3 Context is first-class
-未来的第二大脑不只存知识内容，还要存知识出现、验证、复用的上下文。
+- Problem（问题）
+- Solution（方案）
+- Procedure（流程）
+- Pitfall（坑点）
+- Decision（决策）
+- Concept（概念）
 
-### 2.4 Decision trace matters
-程序员真正想复用的，不只是 solution，还包括当时为什么这样选、没选什么、适用边界是什么。
+### 2.2 事件是证据来源
 
-### 2.5 Source of truth stays local
-在单人阶段，本地数据库仍是 canonical source of truth。未来增加图、召回、repo 绑定时，也应优先扩展本地模型，而不是替换主存储。
+事件不应成为前台主对象，但它们是知识可信度的重要来源。AI 对话、终端报错、commit、测试通过、手动确认等，都可以成为知识对象背后的证据。
+
+### 2.3 情境是召回触发器
+
+Project、Repo、File、Task、Error Signature、Stage 等信息的价值，不在于单独展示，而在于帮助系统判断“什么知识应该在此刻被拿出来”。
+
+### 2.4 Note-first, object-later
+
+在当前阶段，Note 仍然是最现实、最稳定的承载单位。未来模型应从 Note 中长出对象和关系，而不是推翻 Note 主模型重来。
+
+### 2.5 local-first
+
+未来无论引入多少 AI、图关系、召回逻辑或上下文绑定，本地数据库都应继续作为 canonical source of truth。
 
 ## 3. 建模分层
 
-长期看，DevBrain 的数据可分成 5 层。
+### Layer A：Note Layer
 
-### Layer A：Memory Layer
-最原始的记录层。
+当前稳定底座。
 
-目标：保留用户真实经历过的碎片和整理结果。
+职责：
+
+- 保存原始输入
+- 保存整理后的结构化卡片
+- 承接编辑、搜索、筛选与详情主流程
 
 核心对象：
+
 - Note
 - Tag
 - NoteTag
 
 ### Layer B：Knowledge Object Layer
-把 Note 中反复出现的知识对象逐步显式化。
+
+从 Note 中逐步显式化的知识对象层。
+
+职责：
+
+- 让“问题 / 方案 / 流程 / 坑点 / 决策 / 概念”成为可复用资产
 
 核心对象：
-- Concept
+
 - Problem
 - Solution
 - Procedure
 - Pitfall
-- Reference
+- Decision
+- Concept
 
-### Layer C：Decision Layer
-把“如何判断”沉淀成可复用对象。
+### Layer C：Evidence & Relation Layer
+
+让知识对象可追溯、可连接。
+
+职责：
+
+- 记录知识来自哪些证据
+- 记录对象之间的显式关系
 
 核心对象：
-- Decision
-- DecisionFactor
-- DecisionOption
-- Evidence
+
+- EvidenceEvent
+- EvidenceLink
+- Relation
 
 ### Layer D：Context Layer
-把知识和真实工作情境绑定起来。
+
+让知识与真实工作情境建立锚点。
+
+职责：
+
+- 为情境召回提供触发条件
+- 让知识逐步和项目、仓库、文件、任务阶段等建立映射
 
 核心对象：
+
 - Project
 - Repo
 - File
 - Context
-- ArtifactLink
 
-### Layer E：Recall & Capability Layer
-记录知识何时被召回、是否有帮助、哪些区域更熟/更空白。
+### Layer E：Recall & Feedback Layer
+
+让系统知道“什么被召回过、是否有帮助、哪些地方正在生长或过时”。
 
 核心对象：
+
 - RecallEvent
 - ReviewEvent
 - CapabilitySignal
 
-## 4. 核心实体草案
+## 4. 关键设计原则
 
-以下不是要求一次实现，而是长期统一语义。
+### 原则 A：前台主对象与后台证据层分离
 
-### 4.1 Note
-说明：知识系统的基础记录单位，保留原始输入与结构化整理结果。
+用户主要浏览和维护的应是知识对象与 Note，而不是原始事件流。
 
-建议字段：
-- id
-- title
-- raw_input
-- summary
-- problem_text
-- solution_text
-- why_text
-- commands_text
-- references_text
-- status
-- confidence
-- stack
-- source_type
-- source_url
-- created_at
-- updated_at
+### 原则 B：关系先于图
 
-备注：
-- v0.1 继续以 Note 为核心完全正确
-- 后续显式对象可以从 Note 中抽取，但 Note 仍保留原始语义上下文
+真正重要的是关系语义本身，不是图数据库或图可视化技术栈。
 
-### 4.2 Tag
-说明：轻量分类维度，用于筛选与召回增强。
+### 原则 C：召回先于自动行动
 
-建议字段：
-- id
-- name
-- kind 可选，未来可区分 topic / stack / status-like tag / personal label
-- created_at
+在 v0.4 之前，情境层的首要目标是提升召回，而不是变成自动执行代理。
 
-### 4.3 Project
-说明：用户的一个工作单元，可以是一个产品、仓库集合、课程项目或长期主题。
+### 原则 D：证据和反例都是一等公民
 
-建议字段：
-- id
-- name
-- slug
-- description
-- status
-- created_at
-- updated_at
+知识对象不应只有“支持证据”，也应能记录反例、失效条件和被 supersede 的关系。
 
-### 4.4 Repo
-说明：代码仓库对象，用来把知识和真实代码空间绑定。
+## 5. 核心实体方向
 
-建议字段：
-- id
-- project_id 可空
-- name
-- root_path
-- vcs_type 例如 git
-- default_branch
-- last_indexed_at
-- created_at
-- updated_at
+### 5.1 Note
 
-### 4.5 File
-说明：仓库中的文件或逻辑对象锚点。
+说明：
 
-建议字段：
-- id
-- repo_id
-- path
-- file_type
-- symbol_summary 可空
-- last_seen_commit 可空
-- created_at
-- updated_at
+- 当前知识系统的基础记录单位
+- 保留原始输入与结构化整理结果
 
-备注：
-- 后续也可以扩展到 Symbol 表，但不必一开始就上
+说明要点：
 
-### 4.6 Context
-说明：表示一段知识产生、验证或复用时的情境。
+- v0.1 / v0.2 继续以 Note 为核心完全正确
+- 后续对象从 Note 中抽取，但 Note 不消失
 
-建议字段：
-- id
-- project_id 可空
-- repo_id 可空
-- file_id 可空
-- task_label 可空
-- environment_label 可空
-- error_signature 可空
-- stage 例如 coding / debugging / deploy / refactor / study
-- created_at
-- updated_at
+### 5.2 Knowledge Object
 
-关键点：
-Context 不只是“元数据”，它是未来情境召回的锚点。
+这里不要求立即做成复杂多表继承体系，但长期语义要尽量清晰。
 
-### 4.7 Concept
-说明：可被重复提及的概念节点，例如 peer dependency、hydration、event loop。
+建议对象：
 
-建议字段：
-- id
-- name
-- normalized_name
-- description
-- created_at
-- updated_at
+- `Problem`
+  - 可被归一化、反复遇到的问题类型
+- `Solution`
+  - 可被多个问题或 Note 复用的解决方案
+- `Procedure`
+  - 一组可执行步骤
+- `Pitfall`
+  - 高概率误区、限制条件、反模式
+- `Decision`
+  - 方案选择、取舍与适用边界
+- `Concept`
+  - 会被反复提及的稳定概念
 
-### 4.8 Problem
-说明：被反复遇到、可以归一化的问题类型。
+### 5.3 EvidenceEvent
 
-建议字段：
-- id
-- title
-- normalized_signature 可空
-- description
-- created_at
-- updated_at
+说明：
 
-示例：
-- pnpm monorepo peer dependency 冲突
-- Next.js hydration mismatch
-- Docker 容器内 DNS 解析失败
+- 不是前台主资产，而是知识对象背后的证据源
 
-### 4.9 Solution
-说明：可被多个 Note 或 Problem 复用的解决方案对象。
+可能来源：
 
-建议字段：
-- id
-- title
-- description
-- reliability_level draft / tested / trusted
-- created_at
-- updated_at
+- Note 编辑
+- AI 对话
+- terminal 命令与报错
+- commit / diff
+- 测试结果
+- 用户手动确认
 
-### 4.10 Procedure
-说明：可执行步骤集合，适合排查流程、操作法、迁移步骤。
+### 5.4 EvidenceLink
 
-建议字段：
-- id
-- title
-- steps_markdown
-- prerequisites_text 可空
-- expected_outcome 可空
-- created_at
-- updated_at
+说明：
 
-### 4.11 Pitfall
-说明：高频误区、限制条件、不要这么做的提醒。
+- 连接 Knowledge Object 与 EvidenceEvent
+- 用来回答“这条知识凭什么成立”
 
-建议字段：
-- id
-- title
-- description
-- severity 可空
-- created_at
-- updated_at
+建议最少表达：
 
-### 4.12 Decision
-说明：把“当时如何判断”的结果显式化。
+- support
+- verification
+- contradiction
+- superseded_by
 
-建议字段：
-- id
-- title
-- summary
-- decision_status proposed / accepted / rejected / superseded
-- chosen_option_text
-- scope_text 适用边界
-- created_at
-- updated_at
+### 5.5 Relation
 
-示例：
-- MVP 先不用 embedding
-- 先用 SQLite，不引入图数据库
-- 首版不做云同步
+说明：
 
-### 4.13 DecisionFactor
-说明：影响决策的因素。
+- 表达对象之间的语义关系
 
-建议字段：
-- id
-- decision_id
-- factor_type 例如 cost / complexity / speed / privacy / scale
-- description
-- weight 可空
-- created_at
+建议 relation type：
 
-### 4.14 DecisionOption
-说明：某次决策中被比较过的备选项。
-
-建议字段：
-- id
-- decision_id
-- option_label
-- pros_text
-- cons_text
-- chosen boolean
-- created_at
-
-### 4.15 Evidence
-说明：支撑某条知识、关系或决策的证据。
-
-建议字段：
-- id
-- source_kind note / repo / file / commit / external / recall
-- source_ref_id
-- snippet_text 可空
-- confidence
-- created_at
-
-### 4.16 Relation
-说明：知识网的通用边表，用来连接不同类型节点。
-
-建议字段：
-- id
-- from_type
-- from_id
-- to_type
-- to_id
-- relation_type
-- weight 可空
-- evidence_id 可空
-- created_at
-- updated_at
-
-推荐 relation_type 示例：
-- mentions
 - solves
+- caused_by
 - depends_on
 - similar_to
-- used_in
+- applies_in
 - avoid_when
 - derived_from
 - verified_by
 - superseded_by
-- useful_when
 
-设计建议：
-- 前期使用通用 Relation 表足够灵活
-- 真正出现性能或约束问题后，再考虑拆专用关系表
+### 5.6 Context
 
-### 4.17 RecallEvent
-说明：记录某次知识被召回的经过与效果。
+说明：
 
-建议字段：
-- id
-- note_id 或 target_type + target_id
-- context_id 可空
-- trigger_kind search / related / proactive / repo-context
-- query_text 可空
-- used boolean
-- usefulness_rating 可空
-- created_at
+- 表示知识产生、验证或复用时的情境
 
-### 4.18 ReviewEvent
-说明：记录某条知识被复习、重构、确认或升级可信度的事件。
+当前最值得保留的情境维度：
 
-建议字段：
-- id
-- note_id
-- review_type revisit / verify / refine / merge / archive
-- outcome_text
-- created_at
+- project
+- repo
+- file
+- task kind
+- error signature
+- stage（coding / debugging / deploy / refactor / study）
 
-### 4.19 CapabilitySignal
-说明：不是直接给用户展示的“你懂不懂”，而是系统推断知识密度和稳定度的原始信号。
+### 5.7 RecallEvent
 
-建议字段：
-- id
-- subject_type concept / problem / stack / repo
-- subject_id
-- signal_type repeated_success / repeated_failure / frequent_lookup / sparse_coverage / recent_growth
-- value
-- created_at
+说明：
 
-## 5. 关系视角：这张网是怎么长出来的
+- 记录某条知识在何种情境下被召回、是否被采用、是否有帮助
 
-未来的知识网，不是直接“把所有 Note 连起来”，而是逐步从 Note 中长出显式对象。
-
-### 5.1 最早期
-- Note -> Tag
-- Note -> Note（规则推荐，未持久化或弱持久化）
-
-### 5.2 中期
-- Note -> Concept
-- Note -> Problem
-- Note -> Solution
-- Note -> Procedure
-- Problem -> Solution
-- Solution -> Pitfall
-- Procedure -> Problem
-
-### 5.3 更长期
-- Decision -> DecisionFactor
-- Decision -> DecisionOption
-- Decision -> Evidence
-- Note -> Context
-- Context -> Repo / File / Project
-- RecallEvent -> Note / Concept / Decision
-
-这样知识网络就会从“条目之间相关”升级成“对象之间有语义关系”。
+它是后续排序优化、生命周期管理和能力判断的重要反馈源。
 
 ## 6. 阶段化落地建议
 
-### v0.1 已有
-只实现：
-- notes
-- tags
-- note_tags
+### v0.3 优先显式化
 
-允许：
-- related notes 动态计算
-- 不引入复杂图结构
+建议优先让这些东西进入正式模型：
 
-### v0.2 可考虑
-增加轻量增强，但仍不大改主库：
-- AI 抽字段
-- search ranking 增强
-- recall summary
-- 继续保持 Note-first
+- Problem
+- Solution
+- Procedure
+- Decision
+- Relation
+- 最小证据链接
 
-### v0.3 推荐开始显式化
-优先新增：
-- concepts
-- relations
-- evidence
+这一阶段的目标是：
 
-这一步的目标是：
-让图谱开始有“语义节点”和“语义边”，而不是纯相似推荐。
+- 证明对象化与关系化确实有复用价值
+- 不要求一次落完整事件 / 情境 / 反馈闭环
 
-### v0.4 推荐加入上下文层
-优先新增：
-- projects
-- repos
-- files
-- contexts
-- recall_events
+### v0.4 再引入情境与反馈
 
-这一步的目标是：
-让系统能回答“这条知识在哪些项目/文件/错误场景下出现过”。
+建议逐步增加：
 
-### v0.5+ 推荐加入决策与能力层
-优先新增：
-- decisions
-- decision_factors
-- decision_options
-- capability_signals
-- review_events
+- Project / Repo / File / Context
+- RecallEvent
+- 更完整的 EvidenceEvent
 
-这一步的目标是：
-让系统逐步具备“决策路径复用”和“能力地图”能力。
+这一阶段的目标是：
 
-## 7. ID 与引用建议
+- 让知识在情境中被更自然地激活
+- 让召回结果反过来影响系统的判断与排序
 
-为了未来方便扩展，建议尽早统一以下约定：
+## 7. 当前非目标
 
-### 7.1 ID
-- 所有实体统一使用字符串主键
-- 可用 cuid2 / ulid / uuid 之一
-- 不要不同表混用多种风格
+在当前未来模型里，暂时不建议：
 
-### 7.2 时间字段
-- 所有实体统一保留 created_at / updated_at
-- 事件类对象至少保留 created_at
+- 一开始就做复杂图数据库
+- 一开始就做全量行为采集
+- 一开始就做全自动“长期记忆代理”
+- 让 embedding 成为主数据模型
 
-### 7.3 type-safe 引用
-如果做通用 Relation 表，建议：
-- 应用层用 Zod / TypeScript enum 限定 entity type 和 relation type
-- 不要把所有字符串散落在 UI 里
+当前更稳的顺序仍然是：
 
-## 8. 一个完整例子
-
-用户在 DevBrain 中新增一条 Note：
-- title: pnpm peer dependency fix
-- raw_input: monorepo 里装包报 peer dependency 冲突，最后用 overrides 顶过去
-- stack: nodejs
-- tags: pnpm, monorepo
-
-MVP 阶段，只需要存为：
-- notes 一条
-- tags 两条或复用已有标签
-- note_tags 两条关系
-
-后续知识网层可以进一步长出：
-- Concept: peer dependency
-- Concept: monorepo
-- Problem: pnpm monorepo peer dependency conflict
-- Solution: use overrides to align package versions
-- Pitfall: overrides may hide underlying dependency design issues
-
-再往后，接入上下文后可以补：
-- Repo: devbrain
-- File: package.json
-- Context: debugging / dependency install / monorepo workspace
-
-如果未来形成决策沉淀，还可以有：
-- Decision: short-term use overrides before refactoring dependency layout
-- Evidence: installation logs + package.json diff + successful rebuild
-
-这样一条最初很碎的记录，最终就可能成为知识网中的一串节点和边。
-
-## 9. 对当前实现的约束结论
-
-这份未来数据模型对当前 MVP 的直接要求，只有这些：
-
-1. 保持 Note 主模型稳定，不要过早拆太多表
-2. UI 不要直接绑定数据库细节，尽量走 service 层
-3. 相关条目逻辑保持模块化，方便以后升级为混合召回
-4. ID、枚举、时间字段风格尽量统一
-5. 为 project / repo / context / relation 等未来对象留命名空间，不要把概念堵死
-
-## 10. 一句话总结
-
-DevBrain 的未来数据模型，不是从一开始就做成大而全图数据库，
-而是以 Note 为记忆入口，逐步长出 Knowledge Objects、Decision Traces、Context Anchors 和 Recall Events，最终形成一个可生长、可召回、可辅助判断的个人知识网络。
+> 先有知识对象，再有关系，再有情境召回，最后才考虑更高阶的记忆演化。

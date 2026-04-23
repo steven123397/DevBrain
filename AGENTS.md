@@ -14,7 +14,7 @@
 - 仓库级治理规则以 `AGENTS.md` 与 `docs/index.md` 为准。
 - `.codex/`、`.claude/` 等本地工具目录只作本地使用，统一通过 `.gitignore` 忽略，不纳入版本管理。
 - `README.md` 只负责项目总览、本地命令和入口导航，不记录实时执行状态。
-- `docs/design/product-requirements.md`、`docs/design/future-data-model.md`、`docs/design/v0.1-validation-lab.md`、`docs/design/search-and-recall-evolution.md`、`docs/design/v0.2-v0.3-product-blueprint.md` 负责长期边界、验证设计、取舍与后续扩展方向。
+- `docs/design/product-requirements.md`、`docs/design/v0.1-mvp-foundation.md`、`docs/design/future-data-model.md`、`docs/design/search-and-recall-evolution.md`、`docs/design/v0.2-v0.4-product-blueprint.md` 负责长期边界、已完成 v0.1 基线、搜索演进、未来建模与后续阶段蓝图。
 - `docs/plan/*.md` 负责活跃阶段的可执行任务拆分、完成定义与验证要求；`docs/plan/history.md` 负责已完成或废弃计划的归档。
 - `docs/status/project-status.md` 是当前进度、风险、阻塞和下一步的唯一权威状态页。
 - `docs/status/code-review-status.md` 负责沉淀 code review findings 与跟进状态。
